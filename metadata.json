@@ -1,0 +1,6 @@
+{
+  "name": "Wonder Light Adventure - Company Management System",
+  "description": "Enterprise employee and company management platform for Wonder Light Adventure with real-time attendance, task assignment, role-based access, and productivity analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

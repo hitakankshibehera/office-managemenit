@@ -1,0 +1,131 @@
+{
+  "entities": {
+    "Employee": {
+      "title": "Employee",
+      "description": "Employee profile and credentials in Wonder Light Adventure",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "employeeCode": { "type": "string", "maxLength": 64 },
+        "fullName": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 128 },
+        "phone": { "type": "string", "maxLength": 64 },
+        "role": { "type": "string", "enum": ["SUPER_ADMIN", "ADMIN", "EMPLOYEE"] },
+        "department": { "type": "string", "maxLength": 128 },
+        "designation": { "type": "string", "maxLength": 128 },
+        "status": { "type": "string", "enum": ["ACTIVE", "ON_LEAVE", "INACTIVE"] },
+        "avatarUrl": { "type": "string", "maxLength": 512 },
+        "joiningDate": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "fullName", "email", "role", "department", "designation", "status"]
+    },
+    "Task": {
+      "title": "Task",
+      "description": "Delegated operational or expedition task",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 256 },
+        "description": { "type": "string", "maxLength": 2048 },
+        "assignedToId": { "type": "string", "maxLength": 128 },
+        "assignedToName": { "type": "string", "maxLength": 128 },
+        "assignedBy": { "type": "string", "maxLength": 128 },
+        "priority": { "type": "string", "enum": ["Low", "Medium", "High", "Urgent"] },
+        "status": { "type": "string", "enum": ["PENDING", "IN_PROGRESS", "REVIEW", "COMPLETED", "OVERDUE"] },
+        "progress": { "type": "number" },
+        "deadline": { "type": "string", "maxLength": 64 },
+        "department": { "type": "string", "maxLength": 128 }
+      },
+      "required": ["id", "title", "assignedToId", "priority", "status"]
+    },
+    "Attendance": {
+      "title": "Attendance",
+      "description": "Daily employee biometric or check-in attendance record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "employeeId": { "type": "string", "maxLength": 128 },
+        "employeeName": { "type": "string", "maxLength": 128 },
+        "date": { "type": "string", "maxLength": 64 },
+        "checkInTime": { "type": "string", "maxLength": 64 },
+        "checkOutTime": { "type": "string", "maxLength": 64 },
+        "workingHours": { "type": "number" },
+        "status": { "type": "string", "enum": ["PRESENT", "LATE", "HALF_DAY", "ABSENT", "ON_LEAVE"] }
+      },
+      "required": ["id", "employeeId", "date", "status"]
+    },
+    "Leave": {
+      "title": "Leave",
+      "description": "Employee leave application and approval workflow",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "employeeId": { "type": "string", "maxLength": 128 },
+        "employeeName": { "type": "string", "maxLength": 128 },
+        "leaveType": { "type": "string", "maxLength": 64 },
+        "startDate": { "type": "string", "maxLength": 64 },
+        "endDate": { "type": "string", "maxLength": 64 },
+        "days": { "type": "number" },
+        "reason": { "type": "string", "maxLength": 1024 },
+        "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected"] }
+      },
+      "required": ["id", "employeeId", "leaveType", "startDate", "endDate", "status"]
+    },
+    "Announcement": {
+      "title": "Announcement",
+      "description": "Company-wide leadership broadcasts and operational notices",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 256 },
+        "content": { "type": "string", "maxLength": 4096 },
+        "category": { "type": "string", "maxLength": 64 },
+        "targetDepartment": { "type": "string", "maxLength": 128 },
+        "authorName": { "type": "string", "maxLength": 128 },
+        "date": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "title", "content", "category", "targetDepartment"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Security and compliance audit trail records",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "timestamp": { "type": "string", "maxLength": 64 },
+        "action": { "type": "string", "maxLength": 128 },
+        "performedByName": { "type": "string", "maxLength": 128 },
+        "target": { "type": "string", "maxLength": 128 },
+        "ipAddress": { "type": "string", "maxLength": 64 },
+        "details": { "type": "string", "maxLength": 2048 }
+      },
+      "required": ["id", "action", "timestamp", "performedByName"]
+    }
+  },
+  "firestore": {
+    "/employees/{employeeId}": {
+      "schema": { "$ref": "#/entities/Employee" },
+      "description": "Directory of employees and user profiles"
+    },
+    "/tasks/{taskId}": {
+      "schema": { "$ref": "#/entities/Task" },
+      "description": "Collection of tasks assigned to employees"
+    },
+    "/attendance/{attendanceId}": {
+      "schema": { "$ref": "#/entities/Attendance" },
+      "description": "Biometric check-in and check-out logs"
+    },
+    "/leaves/{leaveId}": {
+      "schema": { "$ref": "#/entities/Leave" },
+      "description": "Leave requests and adjudications"
+    },
+    "/announcements/{announcementId}": {
+      "schema": { "$ref": "#/entities/Announcement" },
+      "description": "Official company bulletins and updates"
+    },
+    "/audit_logs/{logId}": {
+      "schema": { "$ref": "#/entities/AuditLog" },
+      "description": "Immutable security and operational event logs"
+    }
+  }
+}

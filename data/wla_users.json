@@ -1,0 +1,107 @@
+[
+  {
+    "id": "user-superadmin",
+    "email": "wonderlightadventure@gmail.com",
+    "role": "SUPER_ADMIN",
+    "fullName": "Wonder Light Admin",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-24T13:02:15.457Z"
+  },
+  {
+    "id": "user-superadmin-2",
+    "email": "admin@wonderlightadventure.com",
+    "role": "SUPER_ADMIN",
+    "fullName": "Super Administrator",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-24T13:02:15.457Z"
+  },
+  {
+    "id": "user-admin-priya",
+    "email": "priya@wonderlightadventure.com",
+    "role": "ADMIN",
+    "fullName": "Priya Sharma",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-24T13:02:15.457Z"
+  },
+  {
+    "id": "user-emp-rahul",
+    "email": "rahul@wonderlightadventure.com",
+    "role": "EMPLOYEE",
+    "employeeId": "emp-1",
+    "fullName": "Rahul Sharma",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-24T13:02:15.457Z"
+  },
+  {
+    "id": "user-emp-aarav",
+    "email": "aarav@wonderlightadventure.com",
+    "role": "EMPLOYEE",
+    "employeeId": "emp-2",
+    "fullName": "Aarav Patel",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-24T13:02:15.457Z"
+  },
+  {
+    "id": "user-emp-neha",
+    "email": "neha@wonderlightadventure.com",
+    "role": "EMPLOYEE",
+    "employeeId": "emp-3",
+    "fullName": "Neha Gupta",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-24T13:02:15.457Z"
+  },
+  {
+    "id": "user-emp-vikram",
+    "email": "vikram@wonderlightadventure.com",
+    "role": "EMPLOYEE",
+    "employeeId": "emp-4",
+    "fullName": "Vikram Singh",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-24T13:02:15.457Z"
+  },
+  {
+    "id": "user-emp-ananya",
+    "email": "ananya@wonderlightadventure.com",
+    "role": "EMPLOYEE",
+    "employeeId": "emp-5",
+    "fullName": "Ananya Roy",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-24T13:02:15.457Z"
+  },
+  {
+    "id": "iEc4sUzFZOeMkLZCvqCVL6imBBq1",
+    "email": "satyammallik32@gmail.com",
+    "role": "EMPLOYEE",
+    "employeeId": "emp-1790256190037",
+    "fullName": "satyammallik",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-24T13:23:10.111Z"
+  },
+  {
+    "id": "q7Ba9L8tPxRDCoMrPo0CYUFOGvj2",
+    "email": "hitakankshibehera0@gmail.com",
+    "role": "EMPLOYEE",
+    "employeeId": "emp-1790256383556",
+    "fullName": "hitakankshi behera",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-24T13:26:23.658Z"
+  },
+  {
+    "id": "user_1790360223670",
+    "email": "hitakankshib@gmail.com",
+    "role": "EMPLOYEE",
+    "employeeId": "emp-1790360223670",
+    "fullName": "Hitakankshib",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-25T18:17:03.670Z"
+  },
+  {
+    "id": "user_1790362105812",
+    "email": "hitakankshibehera0@gmail.cm",
+    "role": "EMPLOYEE",
+    "employeeId": "emp-1790362105812",
+    "fullName": "Hitakankshibehera0",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-25T18:48:25.812Z"
+  }
+]
