@@ -19,10 +19,17 @@ import { useApp } from '../../context/AppContext';
 import { LayoutDashboard, ArrowRight as ArrowIcon } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
-  const { setActiveView, isLoggedIn, isAuthenticated, userRole, openAdminPortal } = useApp();
+  const { setActiveView, isLoggedIn, isAuthenticated, switchDemoUser, currentEmployee } = useApp();
 
   const isUserAuthenticated = isLoggedIn || isAuthenticated;
-  const dashboardTargetView = (userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') ? 'admin-dashboard' : 'employee-dashboard';
+
+  const handleGoToDashboard = () => {
+    if (currentEmployee) {
+      setActiveView('employee-dashboard');
+    } else {
+      switchDemoUser('EMPLOYEE');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#071A2F] text-slate-100 flex flex-col selection:bg-[#18BFFF]/30 selection:text-white">
@@ -51,7 +58,7 @@ export const LandingPage: React.FC = () => {
           <div className="flex items-center gap-3">
             {isUserAuthenticated ? (
               <button
-                onClick={() => setActiveView(dashboardTargetView)}
+                onClick={handleGoToDashboard}
                 className="px-5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-[#168BFF] to-[#18BFFF] text-white shadow-lg hover:shadow-cyan-500/25 transition-all flex items-center gap-2 cursor-pointer"
               >
                 <LayoutDashboard className="w-4 h-4" />
