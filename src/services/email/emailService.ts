@@ -68,29 +68,36 @@ class EmailService {
     relatedTaskId?: string;
   }): Promise<SendResult> {
     const normalizedTo = options.to.trim().toLowerCase();
+    const urls = [
+      '/api/email/dispatch',
+      'http://localhost:3000/api/email/dispatch',
+      'http://127.0.0.1:3000/api/email/dispatch',
+    ];
 
-    try {
-      if (typeof fetch !== 'undefined') {
-        const res = await fetch('/api/email/dispatch', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            to: normalizedTo,
-            subject: options.subject,
-            html: options.html,
-            text: options.text,
-            emailType: options.emailType,
-            relatedUserId: options.relatedUserId,
-            relatedTaskId: options.relatedTaskId,
-          }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          return data;
+    for (const url of urls) {
+      try {
+        if (typeof fetch !== 'undefined') {
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              to: normalizedTo,
+              subject: options.subject,
+              html: options.html,
+              text: options.text,
+              emailType: options.emailType,
+              relatedUserId: options.relatedUserId,
+              relatedTaskId: options.relatedTaskId,
+            }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            return data;
+          }
         }
+      } catch (err) {
+        console.warn(`[EmailService] API dispatch failed for ${url}:`, err);
       }
-    } catch (err) {
-      console.warn('[EmailService] API dispatch fallback:', err);
     }
 
     const simulatedMsgId = `<sim_${Date.now()}@wonderlightadventure.com>`;
