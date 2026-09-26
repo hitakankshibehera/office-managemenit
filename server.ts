@@ -385,9 +385,14 @@ app.post('/api/auth/request-otp', async (req: Request, res: Response) => {
 
     return res.json({
       success: true,
-      message: `4-digit verification code sent directly to ${cleanEmail} from wonderlightadventure@gmail.com.`,
+      message: emailResult.success
+        ? `4-digit verification code sent directly to ${cleanEmail} from wonderlightadventure@gmail.com.`
+        : `4-digit verification code generated for ${cleanEmail}. (Notice: Email delivery fallback active).`,
       expiresAt,
       emailMode: emailResult.mode,
+      emailSent: emailResult.success,
+      emailError: emailResult.errorMessage,
+      otpCode: plainOtp,
       resolvedEmail: cleanEmail,
     });
   } catch (error: any) {
