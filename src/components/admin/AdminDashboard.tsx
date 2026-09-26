@@ -15,6 +15,12 @@ import {
   ChevronRight,
   RotateCcw,
   Lock,
+  Star,
+  Eye,
+  EyeOff,
+  SlidersHorizontal,
+  Check,
+  X,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
@@ -32,9 +38,16 @@ export const AdminDashboard: React.FC = () => {
     userRole,
     currentUser,
     adminUnlockCheckIn,
+    toggleEmployeeDashboardDisplay,
+    batchSetDashboardDisplay,
   } = useApp();
 
   const [dateFilter] = useState('2026-09-24');
+  const [showRosterModal, setShowRosterModal] = useState(false);
+  const [dashboardFilter, setDashboardFilter] = useState<'CHOSEN' | 'ALL'>('CHOSEN');
+
+  const chosenEmployees = employees.filter((e) => e.showOnAdminDashboard !== false);
+  const displayedDashboardEmployees = dashboardFilter === 'CHOSEN' ? chosenEmployees : employees;
 
   // Dynamic stats calculated from real state
   const totalEmployeesCount = employees.length;
@@ -264,22 +277,59 @@ export const AdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Dedicated Section: Signed Up Employees Feed */}
+      {/* Dedicated Section: Signed Up Employees Feed & Admin Choice Roster */}
       <div className="bg-white rounded-2xl shadow-xs border border-slate-200/80 overflow-hidden">
-        <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-lg font-bold text-[#071A2F]">Live Signed-Up Employees</h2>
-              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-[#168BFF]">
-                {employees.length}
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200/60 flex items-center gap-1">
+                <Star size={12} className="fill-amber-400 text-amber-500" />
+                <span>{chosenEmployees.length} Chosen for Dashboard</span>
               </span>
             </div>
             <p className="text-xs text-slate-400 mt-0.5">
-              Employees who completed the onboarding sign-up form appear here automatically.
+              Employees who signed up on the website. Use <strong>Choose Dashboard Employees</strong> to customize who appears on your Admin Dashboard.
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Filter Toggle */}
+            <div className="flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200/80 text-xs font-semibold">
+              <button
+                type="button"
+                onClick={() => setDashboardFilter('CHOSEN')}
+                className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 ${
+                  dashboardFilter === 'CHOSEN'
+                    ? 'bg-amber-500 text-white shadow-xs font-bold'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Star size={12} className={dashboardFilter === 'CHOSEN' ? 'fill-white' : 'fill-slate-400 text-slate-400'} />
+                <span>Chosen Roster ({chosenEmployees.length})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setDashboardFilter('ALL')}
+                className={`px-3 py-1.5 rounded-lg transition-all ${
+                  dashboardFilter === 'ALL'
+                    ? 'bg-[#071A2F] text-white shadow-xs font-bold'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <span>All ({employees.length})</span>
+              </button>
+            </div>
+
+            {/* Open Choose Roster Modal Button */}
+            <button
+              onClick={() => setShowRosterModal(true)}
+              className="px-3.5 py-1.5 rounded-xl font-bold text-xs bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <SlidersHorizontal size={14} />
+              <span>Choose Dashboard Employees</span>
+            </button>
+
             <button
               onClick={() => setActiveView('employees')}
               className="text-xs font-bold text-[#168BFF] hover:underline flex items-center gap-1"
@@ -316,6 +366,10 @@ export const AdminDashboard: React.FC = () => {
               </button>
             </div>
           </div>
+        ) : displayedDashboardEmployees.length === 0 ? (
+          <div className="p-10 text-center text-slate-400 text-xs">
+            No employees currently selected for the Admin Dashboard. Click <strong>Choose Dashboard Employees</strong> to pick employees to display.
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs sm:text-sm">
@@ -326,11 +380,12 @@ export const AdminDashboard: React.FC = () => {
                   <th className="py-3.5 px-6">Department</th>
                   <th className="py-3.5 px-6">Designation</th>
                   <th className="py-3.5 px-6">Registered At</th>
+                  <th className="py-3.5 px-6">Dashboard Choice</th>
                   <th className="py-3.5 px-6 text-right">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {employees.map((emp) => (
+                {displayedDashboardEmployees.map((emp) => (
                   <tr
                     key={emp.id}
                     onClick={() => setActiveView('employees')}
@@ -352,9 +407,16 @@ export const AdminDashboard: React.FC = () => {
                           </div>
                         </div>
                         <div>
-                          <span className="font-bold text-slate-900 block leading-tight">
-                            {emp.fullName}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-900 leading-tight">
+                              {emp.fullName}
+                            </span>
+                            {emp.isSignupAccount && (
+                              <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-blue-100 text-blue-700">
+                                WEBSITE SIGN-UP
+                              </span>
+                            )}
+                          </div>
                           <span className="text-[11px] text-slate-400">{emp.email}</span>
                         </div>
                       </div>
@@ -370,6 +432,27 @@ export const AdminDashboard: React.FC = () => {
                     </td>
                     <td className="py-3.5 px-6 text-xs text-slate-500">
                       {emp.signupTimestamp || emp.joiningDate}
+                    </td>
+                    <td className="py-3.5 px-6">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleEmployeeDashboardDisplay(emp.id);
+                        }}
+                        className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                          emp.showOnAdminDashboard !== false
+                            ? 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100'
+                            : 'bg-slate-100 text-slate-500 border border-slate-200 hover:bg-slate-200'
+                        }`}
+                        title="Click to toggle display on Admin Dashboard"
+                      >
+                        <Star
+                          size={12}
+                          className={emp.showOnAdminDashboard !== false ? 'fill-amber-400 text-amber-500' : 'text-slate-400'}
+                        />
+                        <span>{emp.showOnAdminDashboard !== false ? 'Chosen' : 'Hidden'}</span>
+                      </button>
                     </td>
                     <td className="py-3.5 px-6 text-right">
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -489,6 +572,138 @@ export const AdminDashboard: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Interactive Choose Dashboard Employees Roster Modal */}
+      {showRosterModal && (
+        <div className="fixed inset-0 z-50 bg-[#071A2F]/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-[#0D2B4D] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/10 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-slate-100 dark:border-white/10 flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                    <Star size={18} className="fill-amber-400" />
+                  </div>
+                  <h3 className="text-xl font-black text-[#071A2F] dark:text-white">
+                    Choose Dashboard Employees
+                  </h3>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-300 mt-1">
+                  Select which employees from the website sign-up directory appear on your main Admin Dashboard overview.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowRosterModal(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Batch Controls */}
+            <div className="px-6 py-3 bg-slate-50 dark:bg-white/5 border-b border-slate-100 dark:border-white/10 flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
+                {chosenEmployees.length} of {employees.length} Employees Selected
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => batchSetDashboardDisplay(employees.map((e) => e.id), true)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-50 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300 hover:bg-amber-100 transition-colors border border-amber-200 dark:border-amber-500/30 cursor-pointer"
+                >
+                  Select All
+                </button>
+                <button
+                  type="button"
+                  onClick={() => batchSetDashboardDisplay(employees.map((e) => e.id), false)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                >
+                  Deselect All
+                </button>
+              </div>
+            </div>
+
+            {/* Employee List */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-3">
+              {employees.length === 0 ? (
+                <div className="text-center py-10 text-slate-400 text-xs">
+                  No signed up employees found.
+                </div>
+              ) : (
+                employees.map((emp) => {
+                  const isChosen = emp.showOnAdminDashboard !== false;
+                  return (
+                    <div
+                      key={emp.id}
+                      onClick={() => toggleEmployeeDashboardDisplay(emp.id)}
+                      className={`p-3.5 rounded-2xl border transition-all flex items-center justify-between cursor-pointer ${
+                        isChosen
+                          ? 'bg-amber-500/5 dark:bg-amber-500/10 border-amber-400/40 shadow-xs'
+                          : 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 opacity-70 hover:opacity-100'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-200 shrink-0 ring-2 ring-amber-400/30">
+                          <img
+                            src={emp.profileImage}
+                            alt={emp.fullName}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLElement).style.display = 'none';
+                            }}
+                          />
+                          <div className="w-full h-full bg-[#168BFF] text-white flex items-center justify-center font-bold text-xs">
+                            {emp.fullName.substring(0, 2).toUpperCase()}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-sm text-[#071A2F] dark:text-white">
+                              {emp.fullName}
+                            </span>
+                            {emp.isSignupAccount && (
+                              <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-300">
+                                WEBSITE SIGNUP
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-xs text-slate-400 block">
+                            {emp.email} · {emp.employeeCode} · {emp.departmentName}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                            isChosen
+                              ? 'bg-amber-500 text-white shadow-md shadow-amber-500/20'
+                              : 'bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300'
+                          }`}
+                        >
+                          <Star size={13} className={isChosen ? 'fill-white' : ''} />
+                          <span>{isChosen ? 'Show on Dashboard' : 'Hidden'}</span>
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-slate-100 dark:border-white/10 bg-slate-50 dark:bg-white/5 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowRosterModal(false)}
+                className="px-5 py-2.5 rounded-xl font-bold text-xs bg-[#071A2F] text-white hover:bg-[#168BFF] transition-all shadow-md cursor-pointer"
+              >
+                Done / Save View
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

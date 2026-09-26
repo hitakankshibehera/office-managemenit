@@ -42,6 +42,9 @@ export interface EmployeeProfile {
   shiftCompletedToday?: boolean;
   allowReCheckInToday?: boolean;
   lastShiftDate?: string;
+  showOnAdminDashboard?: boolean;
+  isSignupAccount?: boolean;
+  approvalStatus?: 'APPROVED' | 'PENDING' | 'REJECTED';
 }
 
 export type Employee = EmployeeProfile;

@@ -112,6 +112,9 @@ interface AppContextType {
   updateEmployeeByAdmin: (id: string, data: Partial<EmployeeProfile>) => void;
   deactivateEmployee: (id: string) => void;
   deleteEmployee: (id: string) => void;
+  toggleEmployeeDashboardDisplay: (id: string) => void;
+  batchSetDashboardDisplay: (ids: string[], show: boolean) => void;
+  approveEmployeeSignup: (id: string, status: 'APPROVED' | 'PENDING' | 'REJECTED') => void;
 
   // Leaves
   leaves: LeaveRequest[];
@@ -1197,6 +1200,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         emergencyContact: pendingRegistrationData?.phone || '+91 98765 00000',
         status: 'Active',
         workingStatus: 'Checked Out',
+        showOnAdminDashboard: true,
+        isSignupAccount: true,
+        approvalStatus: 'APPROVED',
       };
 
       setEmployees((prev) => [newEmp, ...prev]);
@@ -2286,6 +2292,52 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     addAuditLog('EMPLOYEE_DELETED', 'EmployeeProfile', id, `Employee deleted from directory`);
   };
 
+  const toggleEmployeeDashboardDisplay = (id: string) => {
+    setEmployees((prev) =>
+      prev.map((e) => {
+        if (e.id === id) {
+          const updatedVal = !(e.showOnAdminDashboard ?? true);
+          addAuditLog(
+            'ADMIN_CHOICE_UPDATED',
+            'EmployeeProfile',
+            id,
+            `Admin ${updatedVal ? 'pinned/selected' : 'unselected'} ${e.fullName} for Admin Dashboard display`
+          );
+          return { ...e, showOnAdminDashboard: updatedVal };
+        }
+        return e;
+      })
+    );
+  };
+
+  const batchSetDashboardDisplay = (ids: string[], show: boolean) => {
+    setEmployees((prev) =>
+      prev.map((e) => {
+        if (ids.includes(e.id)) {
+          return { ...e, showOnAdminDashboard: show };
+        }
+        return e;
+      })
+    );
+    addAuditLog('ADMIN_CHOICE_BATCH', 'EmployeeProfile', undefined, `Admin updated ${ids.length} employees dashboard display to ${show}`);
+  };
+
+  const approveEmployeeSignup = (id: string, approvalStatus: 'APPROVED' | 'PENDING' | 'REJECTED') => {
+    setEmployees((prev) =>
+      prev.map((e) => {
+        if (e.id === id) {
+          return {
+            ...e,
+            approvalStatus,
+            status: approvalStatus === 'APPROVED' ? 'Active' : approvalStatus === 'REJECTED' ? 'Inactive' : 'Pending',
+          };
+        }
+        return e;
+      })
+    );
+    addAuditLog('EMPLOYEE_APPROVAL', 'EmployeeProfile', id, `Admin set employee approval status to ${approvalStatus}`);
+  };
+
   // NOTIFICATIONS
   const markNotificationRead = (id: string) => {
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
@@ -2580,6 +2632,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateEmployeeByAdmin,
         deactivateEmployee,
         deleteEmployee,
+        toggleEmployeeDashboardDisplay,
+        batchSetDashboardDisplay,
+        approveEmployeeSignup,
 
         leaves,
         applyLeave,

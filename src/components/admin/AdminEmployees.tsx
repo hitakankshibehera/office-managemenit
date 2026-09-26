@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import {
   Users,
   Search,
@@ -6,6 +5,8 @@ import {
   Filter,
   Trash2,
   Eye,
+  EyeOff,
+  Star,
   X,
   UserPlus,
   RotateCcw,
@@ -19,6 +20,7 @@ import {
   ArrowRight,
   CheckSquare,
   Lock,
+  UserCheck,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Employee } from '../../types';
@@ -35,9 +37,13 @@ export const AdminEmployees: React.FC = () => {
     registerEmployee,
     verifyRegisterOtp,
     adminUnlockCheckIn,
+    toggleEmployeeDashboardDisplay,
+    batchSetDashboardDisplay,
+    approveEmployeeSignup,
   } = useApp();
 
   const [search, setSearch] = useState('');
+  const [tabFilter, setTabFilter] = useState<'ALL' | 'CHOSEN_DASHBOARD' | 'SIGNUPS'>('ALL');
   const [deptFilter, setDeptFilter] = useState('ALL');
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedEmp, setSelectedEmp] = useState<Employee | null>(null);
@@ -94,7 +100,13 @@ export const AdminEmployees: React.FC = () => {
       emp.designation.toLowerCase().includes(search.toLowerCase());
 
     const matchesDept = deptFilter === 'ALL' || emp.departmentId === deptFilter;
-    return matchesSearch && matchesDept;
+
+    const matchesTab =
+      tabFilter === 'ALL' ||
+      (tabFilter === 'CHOSEN_DASHBOARD' && emp.showOnAdminDashboard !== false) ||
+      (tabFilter === 'SIGNUPS' && (emp.isSignupAccount || Boolean(emp.signupDate)));
+
+    return matchesSearch && matchesDept && matchesTab;
   });
 
   const handleAddSubmit = (e: React.FormEvent) => {
@@ -255,40 +267,98 @@ export const AdminEmployees: React.FC = () => {
         </div>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-2xl shadow-xs border border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-4">
-        {/* Search Input */}
-        <div className="relative w-full sm:w-80">
-          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-            <Search size={16} />
+      {/* Filter, Tabs, and Search Bar */}
+      <div className="bg-white p-4 rounded-2xl shadow-xs border border-slate-200/80 space-y-4">
+        {/* Top Tab Switcher & Batch Actions */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setTabFilter('ALL')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                tabFilter === 'ALL'
+                  ? 'bg-[#071A2F] text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              All Employees ({employees.length})
+            </button>
+            <button
+              onClick={() => setTabFilter('CHOSEN_DASHBOARD')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                tabFilter === 'CHOSEN_DASHBOARD'
+                  ? 'bg-amber-500 text-white shadow-xs'
+                  : 'bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200/60'
+              }`}
+            >
+              <Star size={13} className="fill-amber-400 text-amber-500" />
+              <span>Admin Dashboard Roster ({employees.filter((e) => e.showOnAdminDashboard !== false).length})</span>
+            </button>
+            <button
+              onClick={() => setTabFilter('SIGNUPS')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                tabFilter === 'SIGNUPS'
+                  ? 'bg-[#168BFF] text-white shadow-xs'
+                  : 'bg-blue-50 text-[#168BFF] hover:bg-blue-100 border border-blue-200/60'
+              }`}
+            >
+              <Sparkles size={13} />
+              <span>Website Sign-Ups ({employees.filter((e) => e.isSignupAccount || Boolean(e.signupDate)).length})</span>
+            </button>
           </div>
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name, ID code, email, designation..."
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#168BFF]/20 focus:border-[#168BFF]"
-          />
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => batchSetDashboardDisplay(employees.map((e) => e.id), true)}
+              className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors flex items-center gap-1"
+              title="Show all employees on Admin Dashboard"
+            >
+              <Star size={12} className="text-amber-500" />
+              <span>Select All for Dashboard</span>
+            </button>
+            <button
+              onClick={() => batchSetDashboardDisplay(employees.map((e) => e.id), false)}
+              className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:bg-slate-100 transition-colors flex items-center gap-1"
+              title="Hide all employees from Admin Dashboard"
+            >
+              <EyeOff size={12} />
+              <span>Deselect All</span>
+            </button>
+          </div>
         </div>
 
-        {/* Department Filter */}
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Filter size={16} className="text-slate-400 shrink-0" />
-          <select
-            value={deptFilter}
-            onChange={(e) => setDeptFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#168BFF]/20"
-          >
-            <option value="ALL">All Departments ({employees.length})</option>
-            {departments.map((d) => {
-              const count = employees.filter((e) => e.departmentId === d.id).length;
-              return (
-                <option key={d.id} value={d.id}>
-                  {d.name} ({count})
-                </option>
-              );
-            })}
-          </select>
+        {/* Search Input & Department Selector */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="relative w-full sm:w-80">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <Search size={16} />
+            </div>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by name, ID code, email, designation..."
+              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#168BFF]/20 focus:border-[#168BFF]"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Filter size={16} className="text-slate-400 shrink-0" />
+            <select
+              value={deptFilter}
+              onChange={(e) => setDeptFilter(e.target.value)}
+              className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#168BFF]/20"
+            >
+              <option value="ALL">All Departments ({employees.length})</option>
+              {departments.map((d) => {
+                const count = employees.filter((e) => e.departmentId === d.id).length;
+                return (
+                  <option key={d.id} value={d.id}>
+                    {d.name} ({count})
+                  </option>
+                );
+              })}
+            </select>
+          </div>
         </div>
       </div>
 
@@ -329,7 +399,7 @@ export const AdminEmployees: React.FC = () => {
         ) : filteredEmployees.length === 0 ? (
           /* Filter No Results */
           <div className="p-12 text-center text-slate-400 text-sm">
-            No employees match your search or department filter.
+            No employees match your search or category filter.
           </div>
         ) : (
           /* Populated Employees Table */
@@ -342,6 +412,7 @@ export const AdminEmployees: React.FC = () => {
                   <th className="py-3.5 px-6">Department</th>
                   <th className="py-3.5 px-6">Designation</th>
                   <th className="py-3.5 px-6">Signed Up / Joined</th>
+                  <th className="py-3.5 px-6">Dashboard Choice</th>
                   <th className="py-3.5 px-6">Status</th>
                   <th className="py-3.5 px-6 text-right">Actions</th>
                 </tr>
@@ -403,6 +474,29 @@ export const AdminEmployees: React.FC = () => {
                         <Calendar size={13} className="text-slate-400" />
                         <span>{emp.signupTimestamp || emp.joiningDate}</span>
                       </div>
+                    </td>
+
+                    {/* Admin Dashboard Choice Toggle */}
+                    <td className="py-4 px-6">
+                      {emp.showOnAdminDashboard !== false ? (
+                        <button
+                          onClick={() => toggleEmployeeDashboardDisplay(emp.id)}
+                          className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200/80 hover:bg-amber-100 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                          title="Click to remove from main Admin Dashboard display"
+                        >
+                          <Star size={13} className="fill-amber-400 text-amber-500" />
+                          <span>Show on Dashboard</span>
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => toggleEmployeeDashboardDisplay(emp.id)}
+                          className="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-500 border border-slate-200 hover:bg-slate-200 transition-colors flex items-center gap-1.5 cursor-pointer"
+                          title="Click to display this employee on main Admin Dashboard"
+                        >
+                          <EyeOff size={13} className="text-slate-400" />
+                          <span>Hidden from Dashboard</span>
+                        </button>
+                      )}
                     </td>
 
                     {/* Status */}
