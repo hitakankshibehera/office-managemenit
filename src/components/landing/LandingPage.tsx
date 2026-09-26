@@ -19,10 +19,7 @@ import { useApp } from '../../context/AppContext';
 import { LayoutDashboard, ArrowRight as ArrowIcon } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
-  const { setActiveView, isLoggedIn, isAuthenticated, userRole, openAdminPortal } = useApp();
-
-  const isUserAuthenticated = isLoggedIn || isAuthenticated;
-  const dashboardTargetView = userRole === 'EMPLOYEE' ? 'employee-dashboard' : 'admin-dashboard';
+  const { setActiveView } = useApp();
 
   return (
     <div className="min-h-screen bg-[#071A2F] text-slate-100 flex flex-col selection:bg-[#18BFFF]/30 selection:text-white">
@@ -49,30 +46,18 @@ export const LandingPage: React.FC = () => {
 
           {/* Actions */}
           <div className="flex items-center gap-3">
-            {isUserAuthenticated ? (
-              <button
-                onClick={() => setActiveView(dashboardTargetView)}
-                className="px-5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-[#168BFF] to-[#18BFFF] text-white shadow-lg hover:shadow-cyan-500/25 transition-all flex items-center gap-2 cursor-pointer"
-              >
-                <LayoutDashboard className="w-4 h-4" />
-                <span>Go to Dashboard</span>
-              </button>
-            ) : (
-              <>
-                <button
-                  onClick={() => setActiveView('login')}
-                  className="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
-                >
-                  Login
-                </button>
-                <button
-                  onClick={() => setActiveView('signup')}
-                  className="px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-[#168BFF] to-[#18BFFF] text-white hover:shadow-lg hover:shadow-cyan-500/25 transition-all hover:scale-102"
-                >
-                  Sign Up
-                </button>
-              </>
-            )}
+            <button
+              onClick={() => setActiveView('login')}
+              className="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-200 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            >
+              Login
+            </button>
+            <button
+              onClick={() => setActiveView('signup')}
+              className="px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-[#168BFF] to-[#18BFFF] text-white hover:shadow-lg hover:shadow-cyan-500/25 transition-all hover:scale-102 cursor-pointer"
+            >
+              Sign Up
+            </button>
           </div>
         </div>
       </nav>
@@ -106,7 +91,7 @@ export const LandingPage: React.FC = () => {
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-wrap items-center justify-center gap-4 mb-4">
+            <div className="flex flex-wrap items-center justify-center gap-4">
               <button
                 onClick={() => setActiveView('login')}
                 className="px-8 py-3.5 rounded-xl font-bold text-sm bg-gradient-to-r from-[#168BFF] to-[#18BFFF] text-white hover:shadow-xl hover:shadow-cyan-500/30 transition-all hover:scale-102 flex items-center gap-2 cursor-pointer"
@@ -120,48 +105,6 @@ export const LandingPage: React.FC = () => {
               >
                 Employee Sign Up
               </button>
-            </div>
-          </div>
-
-          {/* Interactive Floating Preview Card Showcase */}
-          <div className="mt-14 max-w-5xl mx-auto rounded-2xl p-2 bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl border border-white/20 shadow-2xl">
-            <div className="bg-[#0B2340] rounded-xl overflow-hidden p-6 sm:p-8">
-              <div className="flex items-center justify-between pb-6 border-b border-white/10">
-                <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 rounded-full bg-rose-500" />
-                  <div className="w-3 h-3 rounded-full bg-amber-500" />
-                  <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                  <span className="text-xs font-mono text-slate-400 ml-2">wonderlight-workspace.internal</span>
-                </div>
-                <span className="text-xs text-cyan-400 font-semibold flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  All Systems Operational
-                </span>
-              </div>
-
-              {/* Sample Metrics Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                <div className="p-4 rounded-xl bg-white/5 border border-white/10">
-                  <span className="text-xs text-slate-400 block mb-1">Total Employees</span>
-                  <div className="text-2xl font-black text-white tabular-nums">48</div>
-                  <span className="text-[11px] text-emerald-400 mt-1 block">Active Workforce</span>
-                </div>
-                <div className="p-4 rounded-xl bg-white/5 border border-white/10">
-                  <span className="text-xs text-slate-400 block mb-1">Present Today</span>
-                  <div className="text-2xl font-black text-emerald-400 tabular-nums">41</div>
-                  <span className="text-[11px] text-slate-300 mt-1 block">95.4% Rate</span>
-                </div>
-                <div className="p-4 rounded-xl bg-white/5 border border-white/10">
-                  <span className="text-xs text-slate-400 block mb-1">Active Tasks</span>
-                  <div className="text-2xl font-black text-cyan-300 tabular-nums">126</div>
-                  <span className="text-[11px] text-blue-300 mt-1 block">82 Completed</span>
-                </div>
-                <div className="p-4 rounded-xl bg-white/5 border border-white/10">
-                  <span className="text-xs text-slate-400 block mb-1">Working Time</span>
-                  <div className="text-2xl font-black text-white tabular-nums font-mono">06h 42m</div>
-                  <span className="text-[11px] text-emerald-300 mt-1 block">Live Today</span>
-                </div>
-              </div>
             </div>
           </div>
         </div>
