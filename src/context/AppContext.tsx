@@ -817,54 +817,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
       const targetEmail = data.resolvedEmail || cleanEmail;
       setOtpTargetEmail(targetEmail);
+      setLatestGeneratedOtp(null);
 
-      const generatedCode = data.otpCode || '1234';
-      setLatestGeneratedOtp(generatedCode);
-
-      // Instantly log to client emails list for Official Email Dispatch Inbox
-      const newEmail: SimulatedEmail = {
-        id: `email-otp-${Date.now()}`,
-        to: targetEmail,
-        toName: targetEmail.split('@')[0],
-        from: 'Wonder Light Adventure <wonderlightadventure@gmail.com>',
-        subject: '✨ Verify Your Account — Wonderlight Adventure',
-        htmlContent: `<p>Hello <strong>${targetEmail.split('@')[0]}</strong>,</p><p>Your secure 4-digit verification code is: <strong style="font-size: 24px; color: #071A2F;">${generatedCode}</strong></p><p>Valid for 10 minutes. Never share this code with anyone.</p>`,
-        sentAt: new Date().toLocaleString(),
-        status: data.emailSent ? 'SENT' : 'DELIVERED_INBOX',
-        type: 'OTP',
-      };
-      setEmails((prev) => [newEmail, ...prev]);
-
-      addAuditLog('OTP_REQUESTED', 'Auth', undefined, `4-digit login verification code (${generatedCode}) dispatched to ${targetEmail} from wonderlightadventure@gmail.com`);
+      addAuditLog('OTP_REQUESTED', 'Auth', undefined, `4-digit login verification code dispatched directly to ${targetEmail} from wonderlightadventure@gmail.com`);
       return {
         success: true,
         resolvedEmail: targetEmail,
         message: data.message || `4-digit verification code sent directly to your email from wonderlightadventure@gmail.com.`,
       };
     } catch (err) {
-      console.warn('[Auth API] Fallback for request-otp:', err);
-      const fallbackCode = '1234';
-      setOtpTargetEmail(cleanEmail);
-      setLatestGeneratedOtp(fallbackCode);
-
-      const newEmail: SimulatedEmail = {
-        id: `email-otp-${Date.now()}`,
-        to: cleanEmail,
-        toName: cleanEmail.split('@')[0],
-        from: 'Wonder Light Adventure <wonderlightadventure@gmail.com>',
-        subject: '✨ Verify Your Account — Wonderlight Adventure',
-        htmlContent: `<p>Your secure 4-digit verification code is: <strong style="font-size: 24px;">${fallbackCode}</strong></p>`,
-        sentAt: new Date().toLocaleString(),
-        status: 'DELIVERED_INBOX',
-        type: 'OTP',
-      };
-      setEmails((prev) => [newEmail, ...prev]);
-
-      addAuditLog('OTP_REQUESTED', 'Auth', undefined, `4-digit login code dispatched to ${cleanEmail} from wonderlightadventure@gmail.com`);
+      console.warn('[Auth API] Error requesting OTP:', err);
       return {
-        success: true,
-        resolvedEmail: cleanEmail,
-        message: '4-digit verification code sent directly to your email from wonderlightadventure@gmail.com.',
+        success: false,
+        message: 'Could not connect to verification server. Please check your internet connection and try again.',
       };
     }
   };
@@ -890,35 +855,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       });
       const data = await res.json();
       if (!res.ok) {
-        return { success: false, message: data.error || 'Failed to resend code.' };
+        return { success: false, message: data.error || 'Failed to send verification code to your email.' };
       }
       const targetEmail = data.resolvedEmail || cleanEmail;
       setOtpTargetEmail(targetEmail);
+      setLatestGeneratedOtp(null);
 
-      const generatedCode = data.otpCode || '1234';
-      setLatestGeneratedOtp(generatedCode);
-
-      const newEmail: SimulatedEmail = {
-        id: `email-otp-${Date.now()}`,
-        to: targetEmail,
-        toName: targetEmail.split('@')[0],
-        from: 'Wonder Light Adventure <wonderlightadventure@gmail.com>',
-        subject: '✨ Verify Your Account — Wonderlight Adventure',
-        htmlContent: `<p>Your new 4-digit verification code is: <strong style="font-size: 24px; color: #071A2F;">${generatedCode}</strong></p>`,
-        sentAt: new Date().toLocaleString(),
-        status: data.emailSent ? 'SENT' : 'DELIVERED_INBOX',
-        type: 'OTP',
-      };
-      setEmails((prev) => [newEmail, ...prev]);
-
-      addAuditLog('OTP_RESENT', 'Auth', undefined, `4-digit verification code (${generatedCode}) resent to ${targetEmail} from wonderlightadventure@gmail.com`);
+      addAuditLog('OTP_RESENT', 'Auth', undefined, `4-digit verification code resent to ${targetEmail} from wonderlightadventure@gmail.com`);
       return { success: true, message: data.message || 'New 4-digit verification code sent directly to your email from wonderlightadventure@gmail.com.' };
     } catch (err) {
-      const fallbackCode = '1234';
-      setOtpTargetEmail(cleanEmail);
-      setLatestGeneratedOtp(fallbackCode);
-      addAuditLog('OTP_RESENT', 'Auth', undefined, `4-digit verification code resent to ${cleanEmail} from wonderlightadventure@gmail.com`);
-      return { success: true, message: 'New 4-digit verification code sent directly to your email from wonderlightadventure@gmail.com.' };
+      return { success: false, message: 'Failed to connect to verification server. Please try again.' };
     }
   };
 
@@ -1036,51 +982,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setPendingRegistrationData(data);
       const targetEmail = resData.resolvedEmail || cleanEmail;
       setOtpTargetEmail(targetEmail);
+      setLatestGeneratedOtp(null);
 
-      const generatedCode = resData.otpCode || '1234';
-      setLatestGeneratedOtp(generatedCode);
-
-      const newEmail: SimulatedEmail = {
-        id: `email-otp-${Date.now()}`,
-        to: targetEmail,
-        toName: data.fullName || targetEmail.split('@')[0],
-        from: 'Wonder Light Adventure <wonderlightadventure@gmail.com>',
-        subject: '✨ Verify Your Account — Wonderlight Adventure',
-        htmlContent: `<p>Hello <strong>${data.fullName}</strong>,</p><p>Your secure 4-digit verification code is: <strong style="font-size: 24px; color: #071A2F;">${generatedCode}</strong></p><p>Valid for 10 minutes. Never share this code with anyone.</p>`,
-        sentAt: new Date().toLocaleString(),
-        status: resData.emailSent ? 'SENT' : 'DELIVERED_INBOX',
-        type: 'OTP',
-      };
-      setEmails((prev) => [newEmail, ...prev]);
-
-      addAuditLog('OTP_REQUESTED', 'Auth', undefined, `4-digit verification code (${generatedCode}) dispatched to ${targetEmail} from wonderlightadventure@gmail.com`);
+      addAuditLog('OTP_REQUESTED', 'Auth', undefined, `4-digit verification code dispatched to ${targetEmail} from wonderlightadventure@gmail.com`);
       return {
         success: true,
         message: resData.message || '4-digit verification code dispatched directly to your email from wonderlightadventure@gmail.com.',
       };
     } catch (err) {
-      const fallbackCode = '1234';
-      setPendingRegistrationData(data);
-      setOtpTargetEmail(cleanEmail);
-      setLatestGeneratedOtp(fallbackCode);
-
-      const newEmail: SimulatedEmail = {
-        id: `email-otp-${Date.now()}`,
-        to: cleanEmail,
-        toName: data.fullName || cleanEmail.split('@')[0],
-        from: 'Wonder Light Adventure <wonderlightadventure@gmail.com>',
-        subject: '✨ Verify Your Account — Wonderlight Adventure',
-        htmlContent: `<p>Hello <strong>${data.fullName}</strong>,</p><p>Your secure 4-digit verification code is: <strong style="font-size: 24px;">${fallbackCode}</strong></p>`,
-        sentAt: new Date().toLocaleString(),
-        status: 'DELIVERED_INBOX',
-        type: 'OTP',
-      };
-      setEmails((prev) => [newEmail, ...prev]);
-
-      addAuditLog('OTP_REQUESTED', 'Auth', undefined, `4-digit verification code dispatched to ${cleanEmail} from wonderlightadventure@gmail.com`);
       return {
-        success: true,
-        message: '4-digit verification code dispatched directly to your email from wonderlightadventure@gmail.com.',
+        success: false,
+        message: 'Could not connect to verification server. Please check your network and try again.',
       };
     }
   };
@@ -2168,7 +2080,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     // Dispatch official 4-digit verification code email to the newly added employee
     try {
-      const res = await fetch('/api/auth/request-otp', {
+      await fetch('/api/auth/request-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2182,22 +2094,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           },
         }),
       });
-      const resData = await res.json();
-      if (resData && resData.otpCode) {
-        setLatestGeneratedOtp(resData.otpCode);
-        const newEmail: SimulatedEmail = {
-          id: `email-otp-${Date.now()}`,
-          to: cleanEmail,
-          toName: newEmp.fullName,
-          from: 'Wonder Light Adventure <wonderlightadventure@gmail.com>',
-          subject: '✨ Your 4-Digit Access Code — Wonderlight Adventure',
-          htmlContent: `<p>Hello <strong>${newEmp.fullName}</strong>,</p><p>Welcome to Wonder Light Adventure! Your secure 4-digit verification code is: <strong style="font-size: 24px; color: #071A2F;">${resData.otpCode}</strong></p>`,
-          sentAt: new Date().toLocaleString(),
-          status: resData.emailSent ? 'SENT' : 'DELIVERED_INBOX',
-          type: 'OTP',
-        };
-        setEmails((prev) => [newEmail, ...prev]);
-      }
     } catch (err) {
       console.warn('[Add Employee] OTP dispatch fallback:', err);
     }

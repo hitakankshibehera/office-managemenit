@@ -245,7 +245,7 @@ export const OtpVerificationView: React.FC<OtpVerificationViewProps> = ({
 
 
       {/* Official Company Direct Email Dispatch Notice */}
-      <div className="mb-4 p-4 rounded-2xl bg-[#071A2F] text-white text-left shadow-md border border-slate-700/50">
+      <div className="mb-6 p-4 rounded-2xl bg-[#071A2F] text-white text-left shadow-md border border-slate-700/50">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-[#18BFFF] border border-blue-400/30 flex items-center justify-center shrink-0 mt-0.5">
             <Send size={18} />
@@ -262,30 +262,6 @@ export const OtpVerificationView: React.FC<OtpVerificationViewProps> = ({
             </p>
           </div>
         </div>
-      </div>
-
-      {/* 4-Digit Code Helper & One-Click Auto-Fill */}
-      <div className="mb-5 p-3.5 rounded-2xl bg-gradient-to-r from-blue-50 via-cyan-50 to-emerald-50 border border-blue-200/80 text-slate-800 text-xs flex items-center justify-between gap-3 shadow-xs">
-        <div className="flex items-center gap-2 min-w-0 text-left">
-          <div className="w-7 h-7 rounded-lg bg-[#168BFF] text-white flex items-center justify-center shrink-0 font-bold shadow-xs">
-            <Sparkles size={14} />
-          </div>
-          <div className="min-w-0">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 block">
-              Active Verification Code
-            </span>
-            <span className="font-mono text-base font-black text-[#071A2F] tracking-widest block">
-              🔐 {latestGeneratedOtp || '1234'}
-            </span>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={() => fillCode(latestGeneratedOtp || '1234')}
-          className="px-3 py-2 bg-[#071A2F] hover:bg-[#168BFF] text-white rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer shadow-xs flex items-center gap-1.5"
-        >
-          <span>Auto-fill {latestGeneratedOtp || '1234'}</span>
-        </button>
       </div>
 
       {/* 4 Digit Boxes */}

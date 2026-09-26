@@ -379,20 +379,18 @@ app.post('/api/auth/request-otp', async (req: Request, res: Response) => {
       expiresInMinutes: 5,
     });
 
-    console.log(
-      `[Auth] OTP generated for ${cleanEmail}: [ ${plainOtp} ]. Email dispatch result: ${emailResult.success ? 'SUCCESS' : 'FAILED'} (mode: ${emailResult.mode})`
-    );
+    if (!emailResult.success) {
+      console.error(`[Auth] Email dispatch failed for ${cleanEmail}: ${emailResult.errorMessage}`);
+      return res.status(500).json({
+        error: `Could not send verification email to ${cleanEmail}: ${emailResult.errorMessage || 'SMTP dispatch error'}. Please verify your email address.`,
+      });
+    }
 
     return res.json({
       success: true,
-      message: emailResult.success
-        ? `4-digit verification code sent directly to ${cleanEmail} from wonderlightadventure@gmail.com.`
-        : `4-digit verification code generated for ${cleanEmail}. (Notice: Email delivery fallback active).`,
+      message: `4-digit verification code sent directly to ${cleanEmail} from wonderlightadventure@gmail.com.`,
       expiresAt,
       emailMode: emailResult.mode,
-      emailSent: emailResult.success,
-      emailError: emailResult.errorMessage,
-      otpCode: plainOtp,
       resolvedEmail: cleanEmail,
     });
   } catch (error: any) {
