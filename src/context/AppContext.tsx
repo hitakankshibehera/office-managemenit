@@ -1487,6 +1487,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     setTasks((prev) => [newTask, ...prev]);
 
+    // Automatically dispatch real task email directly to employee's email address from wonderlightadventure@gmail.com
+    emailService
+      .sendTaskAssignmentEmail({
+        to: assignee.email,
+        employeeName: assignee.fullName,
+        taskTitle: data.title,
+        taskDescription: data.description,
+        priority: data.priority,
+        deadline: data.deadline,
+        taskId: newTaskId,
+        assignedByName: currentEmployee?.fullName || 'Project Admin',
+      })
+      .catch((err) => {
+        console.warn('[Task Assignment Email] Dispatch error:', err);
+      });
+
     // Dispatch to server API for real email relay & audit logging
     fetch('/api/tasks', {
       method: 'POST',
