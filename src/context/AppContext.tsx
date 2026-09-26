@@ -808,7 +808,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return {
       ok: false,
       status: 0,
-      data: { error: lastError?.message || 'Could not connect to verification server. Please make sure the server is running.' },
+      data: { error: lastError?.message || 'Failed to fetch' },
     };
   };
 
@@ -870,11 +870,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         resolvedEmail: targetEmail,
         message: data.message || `4-digit verification code sent directly to your email from wonderlightadventure@gmail.com.`,
       };
-    } catch (err) {
+    } catch (err: any) {
       console.warn('[Auth API] Error requesting OTP:', err);
       return {
         success: false,
-        message: 'Could not connect to verification server. Please check your network connection.',
+        message: err?.message || 'Failed to fetch',
       };
     }
   };
@@ -909,8 +909,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       addAuditLog('OTP_RESENT', 'Auth', undefined, `4-digit verification code resent to ${targetEmail} from wonderlightadventure@gmail.com`);
       return { success: true, message: data.message || 'New 4-digit verification code sent directly to your email from wonderlightadventure@gmail.com.' };
-    } catch (err) {
-      return { success: false, message: 'Failed to connect to verification server. Please try again.' };
+    } catch (err: any) {
+      return { success: false, message: err?.message || 'Failed to fetch' };
     }
   };
 
