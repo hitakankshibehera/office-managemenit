@@ -59,6 +59,7 @@ interface AppContextType {
   resetToScratch: () => void;
 
   // Demo user switching
+  setUserRole: (role: UserRole | null) => void;
   switchDemoUser: (role: UserRole, employeeId?: string) => void;
   loginWithEmail: (email: string) => Promise<{ success: boolean; message: string; otp?: string; resolvedEmail?: string }>;
   verifyLoginOtp: (email: string, otp: string) => Promise<{ success: boolean; message: string }>;
@@ -569,7 +570,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       } catch {}
     }
 
-    if (isLoggedIn && (userRole === 'ADMIN' || userRole === 'SUPER_ADMIN')) {
+    const isChosenAdminEmp = currentEmployee && (currentEmployee.showOnAdminDashboard !== false || currentEmployee.hasAdminAccess === true);
+
+    if (isLoggedIn && (userRole === 'ADMIN' || userRole === 'SUPER_ADMIN' || isChosenAdminEmp)) {
+      if (isChosenAdminEmp && userRole === 'EMPLOYEE') {
+        setUserRole('ADMIN');
+      }
       setActiveView('admin-dashboard');
     } else {
       setActiveView('admin-login');
@@ -2366,9 +2372,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             'ADMIN_CHOICE_UPDATED',
             'EmployeeProfile',
             id,
-            `Admin ${updatedVal ? 'pinned/selected' : 'unselected'} ${e.fullName} for Admin Dashboard display`
+            `Admin ${updatedVal ? 'granted' : 'revoked'} Admin Access & Super Admin Panel display for ${e.fullName}`
           );
-          return { ...e, showOnAdminDashboard: updatedVal };
+          const updatedEmp = { ...e, showOnAdminDashboard: updatedVal, hasAdminAccess: updatedVal };
+          if (currentEmployee && currentEmployee.id === id) {
+            setCurrentEmployee(updatedEmp);
+          }
+          return updatedEmp;
         }
         return e;
       })
@@ -2661,6 +2671,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         loginWithGoogle,
 
         resetToScratch,
+        setUserRole,
         switchDemoUser,
         loginWithEmail,
         verifyLoginOtp,

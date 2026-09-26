@@ -43,6 +43,7 @@ export interface EmployeeProfile {
   allowReCheckInToday?: boolean;
   lastShiftDate?: string;
   showOnAdminDashboard?: boolean;
+  hasAdminAccess?: boolean;
   isSignupAccount?: boolean;
   approvalStatus?: 'APPROVED' | 'PENDING' | 'REJECTED';
 }
