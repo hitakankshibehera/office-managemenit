@@ -76,7 +76,7 @@ const MainAppContent: React.FC = () => {
 
   // Render internal authenticated dashboard layout with strict Role Boundary protection
   const renderCurrentView = () => {
-    const isEmp = userRole === 'EMPLOYEE' || Boolean(currentEmployee);
+    const isEmp = userRole === 'EMPLOYEE';
 
     switch (activeView) {
       case 'employee-dashboard':

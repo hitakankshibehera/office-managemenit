@@ -37,11 +37,18 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
     activeView,
     liveRealTime,
     liveRealDate,
+    navigateByUrl,
   } = useApp();
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      navigateByUrl(searchQuery.trim());
+    }
+  };
 
   const unreadNotifs = notifications.filter((n) => !n.read);
   const unreadEmails = emails.filter((e) => !e.isRead);
@@ -70,10 +77,11 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleSearchKeyDown}
             placeholder={
               userRole === 'EMPLOYEE'
-                ? 'Search tasks, attendance, documents...'
-                : 'Search employees, tasks, departments, logs...'
+                ? 'Search /admin, tasks, attendance...'
+                : 'Search /admin, employees, tasks, logs...'
             }
             className="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#168BFF]/20 focus:border-[#168BFF] placeholder:text-slate-400 transition-all"
           />

@@ -580,33 +580,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     } catch {}
 
-    const lower = path.toLowerCase().replace(/[\s_]+/g, '-');
+    const lower = path.toLowerCase();
 
     if (
       lower.includes('super-admin') ||
       lower.includes('superadmin') ||
       lower === 'super' ||
-      lower === '/super' ||
-      lower.includes('/super-admin') ||
-      lower.includes('/superadmin')
+      lower === '/super'
     ) {
       openSuperAdminPortal();
       return;
     }
 
     if (
-      lower.includes('/admin') ||
-      lower === 'admin' ||
-      lower === '/admin'
+      lower.includes('admin')
     ) {
       openAdminPortal();
       return;
     }
 
     if (
-      lower.includes('/signup') ||
-      lower.includes('register') ||
-      lower === 'signup'
+      lower.includes('signup') ||
+      lower.includes('register')
     ) {
       setActiveView('signup');
       setCurrentRouteUrl('/signup');
@@ -617,8 +612,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     if (
-      lower.includes('/login') ||
-      lower === 'login'
+      lower.includes('login')
     ) {
       setActiveView('login');
       setCurrentRouteUrl('/login');
@@ -642,36 +636,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (typeof window === 'undefined') return;
       const path = (window.location.pathname || '').toLowerCase();
       const hash = (window.location.hash || '').toLowerCase();
+      const search = (window.location.search || '').toLowerCase();
 
       if (
-        path.includes('/super-admin') ||
-        path.includes('/superadmin') ||
-        hash.includes('/super-admin') ||
-        hash.includes('/superadmin')
+        path.includes('super-admin') ||
+        path.includes('superadmin') ||
+        hash.includes('super-admin') ||
+        hash.includes('superadmin')
       ) {
         openSuperAdminPortal();
       } else if (
-        path === '/admin' ||
-        path.startsWith('/admin/') ||
-        path.endsWith('/admin') ||
-        hash === '#/admin' ||
-        hash === '#admin'
+        path.includes('admin') ||
+        hash.includes('admin') ||
+        search.includes('admin')
       ) {
         openAdminPortal();
-      } else if (path.includes('/signup') || hash.includes('/signup')) {
+      } else if (path.includes('signup') || hash.includes('signup')) {
         setActiveView('signup');
         setCurrentRouteUrl('/signup');
-      } else if (path.includes('/login') || hash.includes('/login')) {
+      } else if (path.includes('login') || hash.includes('login')) {
         setActiveView('login');
         setCurrentRouteUrl('/login');
-      } else {
-        // Non-admin URL (e.g. /): If activeView is an admin view, revert to employee or landing view
-        setActiveView((prev) => {
-          if (prev.startsWith('admin') || prev === 'employees') {
-            return (isLoggedIn && userRole === 'EMPLOYEE') ? 'employee-dashboard' : 'landing';
-          }
-          return prev;
-        });
       }
     };
 
