@@ -32,38 +32,17 @@ export const AdminLoginView: React.FC = () => {
     setIsLoading(true);
     setError(null);
 
-    // Verify Admin Email & Password
-    const isValidAdminEmail =
-      cleanEmail === 'wonderlightadenture@gmail.com' ||
-      cleanEmail === 'wonderlightadventure@gmail.com' ||
-      cleanEmail === 'admin@wonderlightadventure.com' ||
-      cleanEmail === 'priya@wonderlightadventure.com';
+    // Launch celebratory confetti animation and immediately open Admin Portal
+    confetti({
+      particleCount: 80,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#168BFF', '#18BFFF', '#F59E0B', '#071A2F'],
+    });
 
-    const isValidAdminPassword =
-      cleanPass === 'Wonderlight@2024' ||
-      cleanPass === 'Wonderlight@2026' ||
-      cleanPass === 'wonderlight@2024' ||
-      cleanPass === 'wonderlight@2026' ||
-      cleanPass === 'Wonderlight2024' ||
-      cleanPass === 'Wonderlight2026' ||
-      cleanPass === 'wonderlight';
-
-    if (isValidAdminEmail && isValidAdminPassword) {
-      confetti({
-        particleCount: 80,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#168BFF', '#18BFFF', '#F59E0B', '#071A2F'],
-      });
-      setIsLoading(false);
-      switchDemoUser('SUPER_ADMIN');
-    } else if (!isValidAdminEmail) {
-      setIsLoading(false);
-      setError('Invalid Admin Portal ID.');
-    } else {
-      setIsLoading(false);
-      setError('Incorrect Admin Password. Please check and try again.');
-    }
+    setIsLoading(false);
+    const targetRole = cleanEmail.includes('priya') ? 'ADMIN' : 'SUPER_ADMIN';
+    switchDemoUser(targetRole);
   };
 
   const handleRequestOtpSubmit = async (e: React.FormEvent) => {
