@@ -116,7 +116,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Brand Header */}
         <div className="h-18 px-5 flex items-center justify-between border-b border-white/5 shrink-0">
           <div
-            onClick={() => handleNavClick(userRole === 'EMPLOYEE' ? 'employee-dashboard' : 'admin-dashboard')}
+            onClick={() => handleNavClick((userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') ? 'admin-dashboard' : 'employee-dashboard')}
             className="cursor-pointer overflow-hidden py-1"
           >
             <Logo

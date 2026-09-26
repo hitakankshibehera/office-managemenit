@@ -22,7 +22,7 @@ export const LandingPage: React.FC = () => {
   const { setActiveView, isLoggedIn, isAuthenticated, userRole, openAdminPortal } = useApp();
 
   const isUserAuthenticated = isLoggedIn || isAuthenticated;
-  const dashboardTargetView = userRole === 'EMPLOYEE' ? 'employee-dashboard' : 'admin-dashboard';
+  const dashboardTargetView = (userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') ? 'admin-dashboard' : 'employee-dashboard';
 
   return (
     <div className="min-h-screen bg-[#071A2F] text-slate-100 flex flex-col selection:bg-[#18BFFF]/30 selection:text-white">
