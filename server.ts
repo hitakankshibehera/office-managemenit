@@ -392,6 +392,12 @@ app.post('/api/auth/request-otp', async (req: Request, res: Response) => {
       expiresInMinutes: 5,
     });
 
+    if (!emailResult.success) {
+      return res.status(500).json({
+        error: `Failed to deliver verification code email to ${cleanEmail}: ${emailResult.errorMessage || 'SMTP connection error'}. Please verify employee email address and try again.`,
+      });
+    }
+
     return res.json({
       success: true,
       message: `4-digit verification code sent directly to ${cleanEmail} from wonderlightadventure@gmail.com.`,

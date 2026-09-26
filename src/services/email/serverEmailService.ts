@@ -64,15 +64,23 @@ class ServerEmailService {
       });
       console.log('[ServerEmailService] Initialized with Gmail OAuth2 for', gmailUser);
     } else if (gmailAppPassword) {
-      // Gmail App Password SMTP Mode
+      // Gmail App Password SMTP Mode (Port 465 SSL)
       this.transporter = nodemailer.createTransport({
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
         auth: {
           user: gmailUser,
           pass: gmailAppPassword.replace(/\s+/g, ''),
         },
+        tls: {
+          rejectUnauthorized: false,
+        },
+        connectionTimeout: 10000,
+        greetingTimeout: 5000,
+        socketTimeout: 15000,
       });
-      console.log('[ServerEmailService] Initialized with Gmail SMTP for', gmailUser);
+      console.log('[ServerEmailService] Initialized with Gmail SMTP (Port 465 SSL) for', gmailUser);
     } else if (smtpHost && smtpUser && smtpPass) {
       // Custom SMTP Mode
       this.transporter = nodemailer.createTransport({
@@ -83,6 +91,12 @@ class ServerEmailService {
           user: smtpUser,
           pass: smtpPass.replace(/\s+/g, ''),
         },
+        tls: {
+          rejectUnauthorized: false,
+        },
+        connectionTimeout: 10000,
+        greetingTimeout: 5000,
+        socketTimeout: 15000,
       });
       console.log('[ServerEmailService] Initialized with custom SMTP server', smtpHost, 'for', smtpUser);
     } else {
@@ -91,6 +105,13 @@ class ServerEmailService {
         '[ServerEmailService] No GMAIL_APP_PASSWORD found in environment. Operating in verified simulation mode with official sender wonderlightadventure@gmail.com.'
       );
     }
+  }
+
+  private getTransporter(): Transporter | null {
+    if (!this.transporter) {
+      this.initTransporter();
+    }
+    return this.transporter;
   }
 
   public getOfficialSender(): string {
@@ -110,13 +131,14 @@ class ServerEmailService {
     mode: 'GMAIL_SMTP' | 'GMAIL_OAUTH' | 'SIMULATED';
     message: string;
   }> {
+    const transporter = this.getTransporter();
     const mode = (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_REFRESH_TOKEN)
       ? 'GMAIL_OAUTH'
       : (process.env.GMAIL_APP_PASSWORD || process.env.GMAIL_PASS)
       ? 'GMAIL_SMTP'
       : 'SIMULATED';
 
-    if (!this.transporter) {
+    if (!transporter) {
       return {
         connected: true,
         sender: this.officialFrom,
@@ -126,7 +148,7 @@ class ServerEmailService {
     }
 
     try {
-      await this.transporter.verify();
+      await transporter.verify();
       return {
         connected: true,
         sender: this.officialFrom,
@@ -162,18 +184,65 @@ class ServerEmailService {
       status: 'PENDING',
     });
 
-    const isLive = Boolean(this.transporter);
-    const mode: 'GMAIL_SMTP' | 'GMAIL_OAUTH' | 'SIMULATED' = isLive
-      ? (process.env.GOOGLE_CLIENT_ID ? 'GMAIL_OAUTH' : 'GMAIL_SMTP')
-      : 'SIMULATED';
+    const gmailUser = process.env.GMAIL_USER || this.officialEmail;
+    const gmailAppPassword = process.env.GMAIL_APP_PASSWORD || process.env.GMAIL_PASS;
+    const hasCredentials = Boolean(gmailAppPassword || process.env.GOOGLE_CLIENT_ID);
+    const transporter = this.getTransporter();
 
-    if (isLive && this.transporter) {
+    if (hasCredentials && transporter) {
+      const mode: 'GMAIL_SMTP' | 'GMAIL_OAUTH' = process.env.GOOGLE_CLIENT_ID ? 'GMAIL_OAUTH' : 'GMAIL_SMTP';
       let sendError: any = null;
 
-      // Primary attempt + 1 retry for transient network drops
-      for (let attempt = 1; attempt <= 2; attempt++) {
+      // 1. Primary Attempt: Port 465 SSL
+      try {
+        const info = await transporter.sendMail({
+          from: this.officialFrom,
+          to: normalizedTo,
+          subject: options.subject,
+          html: options.html,
+          text: options.text,
+          replyTo: this.officialEmail,
+        });
+
+        store.updateEmailLog(logRecord.id, {
+          status: 'SENT',
+          sentAt: new Date().toISOString(),
+          providerMessageId: info.messageId,
+        });
+
+        console.log(`[ServerEmailService] LIVE SMTP Delivered (${mode}) to ${normalizedTo}. MessageId: ${info.messageId}`);
+
+        return {
+          success: true,
+          messageId: info.messageId,
+          logId: logRecord.id,
+          mode,
+        };
+      } catch (err: any) {
+        sendError = err;
+        console.warn(`[ServerEmailService] Port 465 SSL attempt failed for ${normalizedTo}: ${err.message}`);
+      }
+
+      // 2. Secondary Attempt: Port 587 STARTTLS Failover
+      if (gmailAppPassword) {
         try {
-          const info = await this.transporter.sendMail({
+          console.log(`[ServerEmailService] Attempting Port 587 STARTTLS failover for ${normalizedTo}...`);
+          const fallback587 = nodemailer.createTransport({
+            host: 'smtp.gmail.com',
+            port: 587,
+            secure: false,
+            auth: {
+              user: gmailUser,
+              pass: gmailAppPassword.replace(/\s+/g, ''),
+            },
+            tls: {
+              rejectUnauthorized: false,
+            },
+            connectionTimeout: 10000,
+            socketTimeout: 15000,
+          });
+
+          const info587 = await fallback587.sendMail({
             from: this.officialFrom,
             to: normalizedTo,
             subject: options.subject,
@@ -185,44 +254,37 @@ class ServerEmailService {
           store.updateEmailLog(logRecord.id, {
             status: 'SENT',
             sentAt: new Date().toISOString(),
-            providerMessageId: info.messageId,
+            providerMessageId: info587.messageId,
           });
+
+          console.log(`[ServerEmailService] LIVE SMTP Delivered via Port 587 to ${normalizedTo}. MessageId: ${info587.messageId}`);
 
           return {
             success: true,
-            messageId: info.messageId,
+            messageId: info587.messageId,
             logId: logRecord.id,
-            mode,
+            mode: 'GMAIL_SMTP',
           };
-        } catch (err: any) {
-          sendError = err;
-          console.warn(`[ServerEmailService] SMTP Attempt ${attempt} failed for ${normalizedTo}: ${err.message}`);
-          if (attempt === 1) {
-            await new Promise((r) => setTimeout(r, 500));
-          }
+        } catch (fallbackErr: any) {
+          console.error(`[ServerEmailService] Port 587 STARTTLS attempt also failed: ${fallbackErr.message}`);
+          sendError = fallbackErr;
         }
       }
 
-      // If live SMTP fails (e.g. invalid MX domain or network block), gracefully fallback to verified internal dispatch
-      const simulatedMsgId = `<sim_${Date.now()}@wonderlightadventure.com>`;
-      console.log(
-        `[ServerEmailService:FALLBACK] Live SMTP dispatch hit notice: "${sendError?.message}". Switched to verified internal dispatch log for ${normalizedTo}.`
-      );
-
+      // If credentials exist but both port 465 and port 587 failed, fail explicitly so caller knows!
       store.updateEmailLog(logRecord.id, {
-        status: 'SENT',
-        sentAt: new Date().toISOString(),
-        providerMessageId: simulatedMsgId,
-        errorMessage: sendError?.message,
+        status: 'FAILED',
+        errorMessage: sendError?.message || 'SMTP delivery failed on ports 465 and 587',
       });
 
       return {
-        success: true,
-        messageId: simulatedMsgId,
+        success: false,
+        errorMessage: sendError?.message || 'Gmail SMTP delivery failed. Please check recipient email and network connectivity.',
         logId: logRecord.id,
-        mode: 'SIMULATED',
+        mode,
       };
     } else {
+      // Simulation mode ONLY when no GMAIL_APP_PASSWORD is set in environment
       const simulatedMsgId = `<sim_${Date.now()}@wonderlightadventure.com>`;
       console.log(
         `[ServerEmailService:SIMULATED] Sent ${options.emailType} to ${normalizedTo} from ${this.officialFrom}. Subject: "${options.subject}"`
