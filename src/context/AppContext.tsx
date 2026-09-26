@@ -583,23 +583,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const lower = path.toLowerCase();
 
     if (
-      lower.includes('super-admin') ||
-      lower.includes('superadmin') ||
-      lower === 'super' ||
-      lower === '/super'
-    ) {
-      openSuperAdminPortal();
-      return;
-    }
-
-    if (
-      lower.includes('admin')
-    ) {
-      openAdminPortal();
-      return;
-    }
-
-    if (
       lower.includes('signup') ||
       lower.includes('register')
     ) {

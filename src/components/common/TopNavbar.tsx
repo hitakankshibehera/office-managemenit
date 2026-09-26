@@ -80,8 +80,8 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
             onKeyDown={handleSearchKeyDown}
             placeholder={
               userRole === 'EMPLOYEE'
-                ? 'Search /admin, tasks, attendance...'
-                : 'Search /admin, employees, tasks, logs...'
+                ? 'Search tasks, attendance...'
+                : 'Search employees, tasks, logs...'
             }
             className="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#168BFF]/20 focus:border-[#168BFF] placeholder:text-slate-400 transition-all"
           />
