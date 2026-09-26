@@ -16,7 +16,7 @@ import {
 import { useApp } from '../../context/AppContext';
 
 export const EmployeeProfile: React.FC = () => {
-  const { currentEmployee, updateProfile } = useApp();
+  const { currentUser, currentEmployee, updateProfile } = useApp();
 
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({

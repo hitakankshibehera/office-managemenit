@@ -23,6 +23,7 @@ import { useApp } from '../../context/AppContext';
 
 export const EmployeeDashboard: React.FC = () => {
   const {
+    currentUser,
     currentEmployee,
     isWorkingNow,
     workingTimerText,
