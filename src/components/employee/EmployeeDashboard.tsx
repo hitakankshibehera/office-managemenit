@@ -101,7 +101,7 @@ export const EmployeeDashboard: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-xs border border-slate-200/80">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-[#071A2F] tracking-tight flex items-center gap-2">
-            <span>Welcome, {currentEmployee?.fullName?.split(' ')[0] || 'Rahul'}</span>
+            <span>Welcome back, {currentEmployee?.fullName || currentUser?.fullName || 'Team Member'}</span>
             <span>👋</span>
           </h1>
           <p className="text-sm text-slate-500 mt-1">

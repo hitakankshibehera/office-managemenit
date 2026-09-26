@@ -175,18 +175,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Purge any stale demo records to start fresh from scratch
-  if (typeof window !== 'undefined' && localStorage.getItem('wla_clean_slate_v6') !== 'true') {
-    localStorage.removeItem('wla_employees');
-    localStorage.removeItem('wla_tasks');
-    localStorage.removeItem('wla_attendance');
-    localStorage.removeItem('wla_leaves');
-    localStorage.removeItem('wla_announcements');
-    localStorage.removeItem('wla_notifications');
-    localStorage.removeItem('wla_emails');
-    localStorage.removeItem('wla_audit_logs');
-    localStorage.setItem('wla_clean_slate_v6', 'true');
-  }
+  // Load state from localStorage or initialize from mockDatabase
 
   // Load state from localStorage or initialize from mockDatabase (starts empty from scratch)
   const [employees, setEmployees] = useState<EmployeeProfile[]>(() => {
@@ -696,21 +685,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   }, []);
 
-  // Demo user switching helper
+  // Demo / Login user switching helper
   const switchDemoUser = (role: UserRole, employeeId: string = 'emp-1') => {
     if (role === 'EMPLOYEE') {
+      const cleanId = (employeeId || '').toLowerCase().trim();
+      const foundEmp =
+        employees.find(
+          (e) =>
+            e.id.toLowerCase() === cleanId ||
+            (e.userId && e.userId.toLowerCase() === cleanId) ||
+            e.email.toLowerCase() === cleanId ||
+            e.employeeCode.toLowerCase() === cleanId
+        ) || employees.find((e) => e.email.toLowerCase() === cleanId);
+
       const fallbackEmp: EmployeeProfile = {
-        id: employeeId || 'emp-1',
-        userId: 'user-rahul',
-        employeeCode: 'EMP-001',
-        fullName: 'Rahul Sharma',
-        email: 'rahul@wonderlightadventure.com',
+        id: employeeId && employeeId.startsWith('emp-') ? employeeId : `emp-${Date.now()}`,
+        userId: `user-${Date.now()}`,
+        employeeCode: `EMP-${String(employees.length + 1).padStart(3, '0')}`,
+        fullName: cleanId.includes('@') ? cleanId.split('@')[0] : 'Team Member',
+        email: cleanId.includes('@') ? cleanId : 'employee@wonderlightadventure.com',
         phone: '+91 98765 43210',
         departmentId: 'dept-1',
         departmentName: 'Expeditions & Trekking',
-        designation: 'Senior Trek Leader',
-        joiningDate: '12 Jan 2024',
-        profileImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+        designation: 'Team Member',
+        joiningDate: new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }),
+        profileImage: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(employeeId)}`,
         address: 'Bandra West, Mumbai',
         emergencyContact: '+91 98765 00000',
         status: 'Active',
@@ -718,9 +717,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         todayCheckIn: undefined,
         todayTotalHours: '00h 00m 00s',
       };
-      const foundEmp = employees.find((e) => e.id === employeeId) || employees[0];
-      const emp = foundEmp || fallbackEmp;
-      if (!foundEmp) {
+
+      const emp = foundEmp || employees[0] || fallbackEmp;
+      if (!foundEmp && employees.length === 0) {
         setEmployees((prev) => [fallbackEmp, ...prev]);
       }
       setCurrentUser({
@@ -956,18 +955,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       } else if (serverRole === 'ADMIN') {
         switchDemoUser('ADMIN');
       } else {
-        const emp = employees.find((e) => e.email.toLowerCase() === cleanEmail);
+        const emp = employees.find((e) => e.email.toLowerCase() === cleanEmail || e.id === cleanEmail || (e.userId && e.userId === cleanEmail));
         if (emp) {
           switchDemoUser('EMPLOYEE', emp.id);
         } else {
           const nowFormatted = new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
           const timeFormatted = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
           const newEmpId = data.user?.employeeId || `emp-${Date.now()}`;
+          const newUserId = data.user?.id || `user-${Date.now()}`;
+          const registeredName = data.user?.fullName || cleanEmail.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
           const newEmp: EmployeeProfile = {
             id: newEmpId,
-            userId: data.user?.id || `user-${Date.now()}`,
+            userId: newUserId,
             employeeCode: `EMP-${String(employees.length + 1).padStart(3, '0')}`,
-            fullName: data.user?.fullName || cleanEmail.split('@')[0],
+            fullName: registeredName,
             email: cleanEmail,
             phone: '+91 98765 00000',
             departmentId: 'dept-1',

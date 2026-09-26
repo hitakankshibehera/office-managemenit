@@ -84,7 +84,7 @@ export const EmployeeProfile: React.FC = () => {
           </div>
 
           <h2 className="text-xl font-extrabold text-[#071A2F]">
-            {currentEmployee?.fullName || 'Rahul Kumar'}
+            {currentEmployee?.fullName || currentUser?.fullName || 'Team Member'}
           </h2>
           <span className="text-xs font-mono font-bold text-[#168BFF] mt-1 px-2.5 py-0.5 rounded-full bg-blue-50 border border-blue-100">
             {currentEmployee?.employeeCode || 'EMP-001'}
