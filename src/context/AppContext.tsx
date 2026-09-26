@@ -277,16 +277,47 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (typeof window !== 'undefined') {
       const path = (window.location.pathname || '').toLowerCase();
       const hash = (window.location.hash || '').toLowerCase();
+      const savedLoggedIn = localStorage.getItem('wla_is_logged_in') === 'true';
+      const savedRole = savedLoggedIn ? localStorage.getItem('wla_user_role') : null;
+      const savedEmployee = localStorage.getItem('wla_current_employee');
+      const savedActiveView = savedLoggedIn ? localStorage.getItem('wla_active_view') : null;
 
       const isExplicitAdminUrl = path.includes('admin') || hash.includes('admin');
 
       if (isExplicitAdminUrl) {
-        const savedLoggedIn = localStorage.getItem('wla_is_logged_in') === 'true';
-        const savedRole = savedLoggedIn ? localStorage.getItem('wla_user_role') : null;
         if (savedLoggedIn && (savedRole === 'ADMIN' || savedRole === 'SUPER_ADMIN')) {
-          return 'admin-dashboard';
+          return savedActiveView && savedActiveView.startsWith('admin-') ? savedActiveView : 'admin-dashboard';
         }
         return 'admin-login';
+      }
+
+      // Preserve active view & session state across page reloads/refreshes for logged-in employees/users
+      if (savedLoggedIn) {
+        if (savedEmployee || savedRole === 'EMPLOYEE') {
+          if (
+            savedActiveView &&
+            savedActiveView !== 'landing' &&
+            savedActiveView !== 'login' &&
+            savedActiveView !== 'signup' &&
+            savedActiveView !== 'admin-login'
+          ) {
+            return savedActiveView;
+          }
+          return 'employee-dashboard';
+        }
+
+        if (savedRole === 'ADMIN' || savedRole === 'SUPER_ADMIN') {
+          if (
+            savedActiveView &&
+            savedActiveView !== 'landing' &&
+            savedActiveView !== 'login' &&
+            savedActiveView !== 'signup' &&
+            savedActiveView !== 'admin-login'
+          ) {
+            return savedActiveView;
+          }
+          return 'admin-dashboard';
+        }
       }
 
       if (path === '/login') return 'login';
@@ -635,11 +666,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ) {
         openAdminPortal();
       } else if (path.includes('signup') || hash.includes('signup')) {
-        setActiveView('signup');
-        setCurrentRouteUrl('/signup');
+        const savedLoggedIn = typeof window !== 'undefined' && localStorage.getItem('wla_is_logged_in') === 'true';
+        if (!savedLoggedIn) {
+          setActiveView('signup');
+          setCurrentRouteUrl('/signup');
+        }
       } else if (path.includes('login') || hash.includes('login')) {
-        setActiveView('login');
-        setCurrentRouteUrl('/login');
+        const savedLoggedIn = typeof window !== 'undefined' && localStorage.getItem('wla_is_logged_in') === 'true';
+        if (!savedLoggedIn) {
+          setActiveView('login');
+          setCurrentRouteUrl('/login');
+        }
       }
     };
 
