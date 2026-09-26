@@ -90,7 +90,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'audit-logs', label: 'Audit Logs', icon: ShieldAlert },
   ];
 
-  const navItems = userRole === 'EMPLOYEE' ? employeeNavItems : adminNavItems;
+  const isEmployeeRole = userRole === 'EMPLOYEE' || Boolean(currentEmployee);
+  const navItems = isEmployeeRole ? employeeNavItems : adminNavItems;
 
   const handleNavClick = (viewId: string) => {
     setActiveView(viewId);
@@ -116,7 +117,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Brand Header */}
         <div className="h-18 px-5 flex items-center justify-between border-b border-white/5 shrink-0">
           <div
-            onClick={() => handleNavClick((userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') ? 'admin-dashboard' : 'employee-dashboard')}
+            onClick={() => handleNavClick(isEmployeeRole ? 'employee-dashboard' : 'admin-dashboard')}
             className="cursor-pointer overflow-hidden py-1"
           >
             <Logo
@@ -139,7 +140,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="px-3 pt-3 pb-1">
           <div
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold ${
-              userRole === 'EMPLOYEE'
+              isEmployeeRole
                 ? 'bg-blue-950/40 border-blue-500/30 text-blue-300'
                 : 'bg-emerald-950/40 border-emerald-500/30 text-emerald-300'
             } ${isCollapsed ? 'justify-center px-1' : ''}`}
@@ -147,7 +148,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <Sparkles size={14} className="shrink-0" />
             {!isCollapsed && (
               <span className="truncate">
-                {userRole === 'SUPER_ADMIN' ? 'SUPER ADMIN PORTAL' : userRole === 'ADMIN' ? 'ADMIN PORTAL' : 'EMPLOYEE PORTAL'}
+                {isEmployeeRole
+                  ? 'EMPLOYEE PORTAL'
+                  : userRole === 'SUPER_ADMIN'
+                  ? 'SUPER ADMIN PORTAL'
+                  : 'ADMIN PORTAL'}
               </span>
             )}
           </div>

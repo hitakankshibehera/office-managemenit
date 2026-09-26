@@ -261,10 +261,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [userRole, setUserRole] = useState<UserRole | null>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('wla_user_role') as UserRole | null;
-      if (saved) return saved;
       const savedEmployee = localStorage.getItem('wla_current_employee');
       if (savedEmployee) return 'EMPLOYEE';
+      const saved = localStorage.getItem('wla_user_role') as UserRole | null;
+      if (saved) return saved;
     }
     return null;
   });
@@ -299,8 +299,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (isLoggedIn) {
         localStorage.setItem('wla_is_logged_in', 'true');
         if (currentUser) localStorage.setItem('wla_current_user', JSON.stringify(currentUser));
-        if (currentEmployee) localStorage.setItem('wla_current_employee', JSON.stringify(currentEmployee));
-        if (userRole) localStorage.setItem('wla_user_role', userRole);
+        if (currentEmployee) {
+          localStorage.setItem('wla_current_employee', JSON.stringify(currentEmployee));
+          localStorage.setItem('wla_user_role', 'EMPLOYEE');
+        } else {
+          localStorage.removeItem('wla_current_employee');
+          if (userRole) localStorage.setItem('wla_user_role', userRole);
+        }
         if (activeView) localStorage.setItem('wla_active_view', activeView);
       } else {
         localStorage.removeItem('wla_is_logged_in');
