@@ -778,10 +778,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           try {
             data = JSON.parse(text);
           } catch {
-            data = { error: `Server returned HTTP ${res.status}` };
+            data = { error: `Server returned non-JSON response HTTP ${res.status}` };
           }
         }
-        if (res.ok) {
+        if (res.ok && contentType.includes('application/json') && !data.error && data.success !== false) {
           return { ok: true, status: res.status, data };
         } else if (url === urls[urls.length - 1]) {
           return { ok: false, status: res.status, data };

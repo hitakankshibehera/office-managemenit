@@ -850,3 +850,6 @@ async function startServer() {
 startServer().catch((err) => {
   console.error('[Server Error]', err);
 });
+
+export default app;
+
