@@ -477,25 +477,25 @@ export const AdminEmployees: React.FC = () => {
                       </div>
                     </td>
 
-                    {/* Admin Access / Super Admin Panel Choice Toggle */}
+                    {/* Admin Access & Dashboard Choice Toggle */}
                     <td className="py-4 px-6">
-                      {emp.showOnAdminDashboard !== false || emp.hasAdminAccess === true ? (
+                      {emp.showOnAdminDashboard !== false ? (
                         <button
                           onClick={() => toggleEmployeeDashboardDisplay(emp.id)}
-                          className="px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-300 hover:bg-amber-100 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                          title="Admin Access & Super Admin Panel granted. Click to revoke access."
+                          className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200/80 hover:bg-amber-100 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                          title="Click to revoke Super Admin Portal button on employee dashboard & hide from admin roster"
                         >
                           <Star size={13} className="fill-amber-400 text-amber-500" />
-                          <span>Admin Access Granted</span>
+                          <span>Chosen (Admin Access)</span>
                         </button>
                       ) : (
                         <button
                           onClick={() => toggleEmployeeDashboardDisplay(emp.id)}
-                          className="px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-500 border border-slate-200 hover:bg-slate-200 transition-colors flex items-center gap-1.5 cursor-pointer"
-                          title="Click to grant Super Admin Panel access to this employee."
+                          className="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-500 border border-slate-200 hover:bg-slate-200 transition-colors flex items-center gap-1.5 cursor-pointer"
+                          title="Click to choose employee: grants Super Admin Portal button on employee dashboard"
                         >
                           <EyeOff size={13} className="text-slate-400" />
-                          <span>Grant Admin Access</span>
+                          <span>Hidden (No Access)</span>
                         </button>
                       )}
                     </td>

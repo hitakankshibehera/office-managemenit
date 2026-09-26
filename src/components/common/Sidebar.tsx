@@ -12,7 +12,6 @@ import {
   FileBarChart,
   Megaphone,
   Building2,
-  Shield,
   ShieldAlert,
   LogOut,
   Mail,
@@ -39,7 +38,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const {
     userRole,
-    setUserRole,
     activeView,
     setActiveView,
     currentEmployee,
@@ -50,6 +48,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     leaves,
     groups,
     emails,
+    openAdminPortal,
   } = useApp();
 
   const unreadNotifs = notifications.filter((n) => !n.read).length;
@@ -201,67 +200,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
           })}
         </div>
 
-        {/* Super Admin Panel Access Button for Chosen Employees (Downside Left Side Corner) */}
-        {isEmployeeRole && currentEmployee && (currentEmployee.showOnAdminDashboard !== false || currentEmployee.hasAdminAccess === true) && (
-          <div className="px-3 py-2 border-t border-amber-500/20 bg-gradient-to-b from-amber-950/30 via-slate-900/60 to-blue-950/40 shrink-0">
-            <button
-              onClick={() => {
-                setUserRole('ADMIN');
-                setActiveView('admin-dashboard');
-                setIsMobileOpen(false);
-              }}
-              className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-bold text-xs bg-gradient-to-r from-amber-500/20 via-blue-600/30 to-cyan-500/20 hover:from-amber-500/30 hover:to-cyan-500/30 text-amber-300 border border-amber-500/40 shadow-lg shadow-amber-500/10 transition-all hover:scale-102 cursor-pointer group ${
-                isCollapsed ? 'justify-center px-0' : ''
-              }`}
-              title="Super Admin Panel (Admin Access Granted by Admin)"
-            >
-              <Shield size={18} className="text-amber-400 animate-pulse shrink-0" />
-              {!isCollapsed && (
-                <div className="flex-1 text-left min-w-0">
-                  <div className="font-extrabold text-amber-300 truncate tracking-tight text-[11px] flex items-center gap-1">
-                    <span>Super Admin Panel</span>
-                    <Sparkles size={11} className="text-amber-400 shrink-0" />
-                  </div>
-                  <div className="text-[10px] text-cyan-300/80 font-medium truncate">
-                    Chosen by Admin · Open Panel
-                  </div>
-                </div>
-              )}
-            </button>
-          </div>
-        )}
-
-        {/* Switch back to Employee Portal Button when in Admin Mode */}
-        {!isEmployeeRole && currentEmployee && (
-          <div className="px-3 py-2 border-t border-blue-500/20 bg-blue-950/30 shrink-0">
-            <button
-              onClick={() => {
-                setUserRole('EMPLOYEE');
-                setActiveView('employee-dashboard');
-                setIsMobileOpen(false);
-              }}
-              className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-bold text-xs bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 shadow-sm transition-all hover:scale-102 cursor-pointer group ${
-                isCollapsed ? 'justify-center px-0' : ''
-              }`}
-              title="Switch back to Employee Portal"
-            >
-              <User size={18} className="text-blue-400 shrink-0" />
-              {!isCollapsed && (
-                <div className="flex-1 text-left min-w-0">
-                  <div className="font-extrabold text-blue-200 truncate tracking-tight text-[11px]">
-                    Employee Portal
-                  </div>
-                  <div className="text-[10px] text-blue-400/80 font-medium truncate">
-                    Switch to My Dashboard
-                  </div>
-                </div>
-              )}
-            </button>
-          </div>
-        )}
-
         {/* User Card & Logout Footer */}
         <div className="p-3 border-t border-white/5 bg-[#071A2F] shrink-0">
+          {/* Super Admin Portal button (Shown ONLY for employees chosen/selected by Admin) */}
+          {isEmployeeRole && currentEmployee && currentEmployee.showOnAdminDashboard !== false && (
+            <button
+              onClick={() => openAdminPortal()}
+              className={`w-full mb-2.5 px-3 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-purple-600 to-[#168BFF] text-white text-xs font-extrabold flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer ${
+                isCollapsed ? 'px-0 justify-center' : ''
+              }`}
+              title="Direct Super Admin / Admin Portal Access (Granted by Admin)"
+            >
+              <ShieldAlert size={16} className="shrink-0 animate-pulse text-amber-300" />
+              {!isCollapsed && <span className="truncate tracking-wide">Super Admin Portal</span>}
+            </button>
+          )}
+
           <div className="flex items-center gap-3 p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
             {/* Avatar */}
             <div className="relative shrink-0">
