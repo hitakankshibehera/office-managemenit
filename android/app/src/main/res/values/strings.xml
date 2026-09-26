@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">W.A manage </string>
+    <string name="title_activity_main">W.A manage </string>
+    <string name="package_name">com.w.amanage.app</string>
+    <string name="custom_url_scheme">com.w.amanage.app</string>
+</resources>
