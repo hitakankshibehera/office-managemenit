@@ -264,22 +264,6 @@ export const OtpVerificationView: React.FC<OtpVerificationViewProps> = ({
         </div>
       </div>
 
-      {latestGeneratedOtp && (
-        <div className="mb-4 p-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 text-xs flex items-center justify-between animate-in fade-in duration-200">
-          <div className="flex items-center gap-1.5 font-medium">
-            <Sparkles size={14} className="text-[#168BFF]" />
-            <span>Code: <strong className="font-mono font-bold text-sm text-[#168BFF] ml-1">{latestGeneratedOtp}</strong></span>
-          </div>
-          <button
-            type="button"
-            onClick={() => fillCode(latestGeneratedOtp)}
-            className="px-3 py-1 bg-[#168BFF] text-white rounded-lg text-[11px] font-bold hover:bg-[#18BFFF] transition-colors cursor-pointer shadow-xs"
-          >
-            Auto-fill
-          </button>
-        </div>
-      )}
-
 
       {/* 4 Digit Boxes */}
       <div className="flex items-center justify-center gap-3 sm:gap-4 my-6" onPaste={handlePaste}>

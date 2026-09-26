@@ -823,24 +823,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       expiresInMinutes: 5,
     });
 
-    // Add simulated inbox email for instant access
+    // Add simulated inbox email
     const simulatedEmailItem: SimulatedEmail = {
       id: `email-otp-${Date.now()}`,
       from: 'Wonder Light Adventure <wonderlightadventure@gmail.com>',
       to: cleanEmail,
       toName: recipientName,
-      subject: `[Wonder Light Adventure] Your 4-Digit ${purpose === 'SIGNUP' ? 'Registration' : 'Login'} Code: ${generatedOtp}`,
-      snippet: `Your 4-digit verification code is ${generatedOtp}. Dispatched from wonderlightadventure@gmail.com.`,
+      subject: `[Wonder Light Adventure] Your 4-Digit ${purpose === 'SIGNUP' ? 'Registration' : 'Login'} Verification Code`,
+      snippet: `Your 4-digit verification code has been dispatched directly to your inbox from wonderlightadventure@gmail.com.`,
       timestamp: 'Just now',
       type: 'SECURITY',
       isRead: false,
       htmlContent: `
         <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
           <h2 style="color: #071A2F; margin-bottom: 8px;">Wonder Light Adventure</h2>
-          <p style="color: #64748b; font-size: 14px;">Your 4-digit verification code for <strong>${cleanEmail}</strong>:</p>
-          <div style="background: #F0F7FF; border: 2px dashed #168BFF; padding: 16px; text-align: center; border-radius: 10px; margin: 16px 0;">
-            <span style="font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #168BFF; font-family: monospace;">${generatedOtp}</span>
-          </div>
+          <p style="color: #64748b; font-size: 14px;">A 4-digit verification code was dispatched to <strong>${cleanEmail}</strong>.</p>
           <p style="color: #94a3b8; font-size: 12px;">Dispatched from official sender: <strong>wonderlightadventure@gmail.com</strong></p>
         </div>
       `,
@@ -852,7 +849,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'OTP_REQUESTED',
       'Auth',
       undefined,
-      `4-digit ${purpose.toLowerCase()} verification code (${generatedOtp}) generated & dispatched to ${cleanEmail} from wonderlightadventure@gmail.com`
+      `4-digit ${purpose.toLowerCase()} verification code dispatched directly to ${cleanEmail} from wonderlightadventure@gmail.com`
     );
 
     return {
