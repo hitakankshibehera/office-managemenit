@@ -5,6 +5,7 @@ import {
   EmployeeProfile,
   Department,
   Task,
+  TaskFileAttachment,
   AttendanceRecord,
   LeaveRequest,
   Announcement,
@@ -397,7 +398,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 allowReCheckInToday: false,
                 todayCheckIn: undefined,
                 todayCheckOut: undefined,
-                workingStatus: emp.workingStatus === 'Working' ? 'Working' : ('Checked Out' as const),
+                workingStatus: (emp.workingStatus === 'Working' ? 'Working' : 'Checked Out') as EmployeeProfile['workingStatus'],
               };
             }
           }
