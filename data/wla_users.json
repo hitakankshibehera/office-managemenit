@@ -103,5 +103,14 @@
     "fullName": "Hitakankshibehera0",
     "status": "ACTIVE",
     "createdAt": "2026-09-25T18:48:25.812Z"
+  },
+  {
+    "id": "user_1790405657146",
+    "email": "infotechxra@gmail.com",
+    "role": "EMPLOYEE",
+    "employeeId": "emp-1790405657146",
+    "fullName": "Hitesh",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-26T06:54:17.146Z"
   }
 ]

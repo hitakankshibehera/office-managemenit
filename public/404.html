@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <script>
+    // SPA 404 Fallback Redirect for Vercel / GitHub Pages
+    var path = window.location.pathname;
+    var search = window.location.search;
+    var hash = window.location.hash;
+    window.location.replace('/' + (hash ? hash : '#/' + path.replace(/^\//, '') + search));
+  </script>
+</head>
+<body>
+</body>
+</html>
