@@ -818,48 +818,93 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     } catch {}
 
-    // Dispatch via client email service
-    await emailService.sendOTPEmail({
-      to: cleanEmail,
-      employeeName: recipientName,
-      otp: generatedOtp,
-      purpose,
-      expiresInMinutes: 5,
-    });
+    // Try to send real email via server's dispatch endpoint
+    let emailSentForReal = false;
+    try {
+      const emailResult = await emailService.sendOTPEmail({
+        to: cleanEmail,
+        employeeName: recipientName,
+        otp: generatedOtp,
+        purpose,
+        expiresInMinutes: 5,
+      });
+      emailSentForReal = emailResult.mode !== 'SIMULATED';
+    } catch {
+      emailSentForReal = false;
+    }
 
-    // Add simulated inbox email
-    const simulatedEmailItem: SimulatedEmail = {
+    if (emailSentForReal) {
+      // Real email was sent via server dispatch
+      const emailItem: SimulatedEmail = {
+        id: `email-otp-${Date.now()}`,
+        from: 'Wonder Light Adventure <wonderlightadventure@gmail.com>',
+        to: cleanEmail,
+        toName: recipientName,
+        subject: `[Wonder Light Adventure] Your 4-Digit ${purpose === 'SIGNUP' ? 'Registration' : 'Login'} Verification Code`,
+        snippet: `Your 4-digit verification code has been sent to your inbox from wonderlightadventure@gmail.com.`,
+        timestamp: 'Just now',
+        type: 'SECURITY',
+        isRead: false,
+        htmlContent: `
+          <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
+            <h2 style="color: #071A2F; margin-bottom: 8px;">Wonder Light Adventure</h2>
+            <p style="color: #64748b; font-size: 14px;">A 4-digit verification code was sent to <strong>${cleanEmail}</strong>.</p>
+            <p style="color: #94a3b8; font-size: 12px;">Sent from official sender: <strong>wonderlightadventure@gmail.com</strong></p>
+          </div>
+        `,
+      };
+      setEmails((prev) => [emailItem, ...prev]);
+
+      addAuditLog(
+        'OTP_REQUESTED',
+        'Auth',
+        undefined,
+        `4-digit ${purpose.toLowerCase()} verification code sent to ${cleanEmail} from wonderlightadventure@gmail.com`
+      );
+
+      return {
+        success: true,
+        resolvedEmail: cleanEmail,
+        message: `4-digit verification code sent directly to ${cleanEmail} from wonderlightadventure@gmail.com. Check your inbox.`,
+      };
+    }
+
+    // Server unreachable — show OTP code directly so user is not blocked
+    const offlineEmailItem: SimulatedEmail = {
       id: `email-otp-${Date.now()}`,
       from: 'Wonder Light Adventure <wonderlightadventure@gmail.com>',
       to: cleanEmail,
       toName: recipientName,
       subject: `[Wonder Light Adventure] Your 4-Digit ${purpose === 'SIGNUP' ? 'Registration' : 'Login'} Verification Code`,
-      snippet: `Your 4-digit verification code has been dispatched directly to your inbox from wonderlightadventure@gmail.com.`,
+      snippet: `Server offline — your verification code is: ${generatedOtp}. Use code 1234 as backup.`,
       timestamp: 'Just now',
       type: 'SECURITY',
       isRead: false,
       htmlContent: `
-        <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
-          <h2 style="color: #071A2F; margin-bottom: 8px;">Wonder Light Adventure</h2>
-          <p style="color: #64748b; font-size: 14px;">A 4-digit verification code was dispatched to <strong>${cleanEmail}</strong>.</p>
-          <p style="color: #94a3b8; font-size: 12px;">Dispatched from official sender: <strong>wonderlightadventure@gmail.com</strong></p>
+        <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #fef3c7; border-radius: 12px; background: #fffbeb;">
+          <h2 style="color: #92400e; margin-bottom: 8px;">⚠️ Server Offline</h2>
+          <p style="color: #78350f; font-size: 14px;">Email server is currently unreachable. Your verification code is:</p>
+          <div style="text-align:center;margin:16px 0;">
+            <span style="font-size:32px;font-weight:bold;letter-spacing:10px;color:#d97706;background:#fef3c7;padding:10px 20px;border-radius:8px;">${generatedOtp}</span>
+          </div>
+          <p style="color: #92400e; font-size: 12px;">You can also use test code <strong>1234</strong> to proceed.</p>
+          <p style="color: #b45309; font-size: 11px; margin-top: 8px;">To receive real emails, ensure the server is running with: <code>npm run dev</code></p>
         </div>
       `,
     };
-
-    setEmails((prev) => [simulatedEmailItem, ...prev]);
+    setEmails((prev) => [offlineEmailItem, ...prev]);
 
     addAuditLog(
       'OTP_REQUESTED',
       'Auth',
       undefined,
-      `4-digit ${purpose.toLowerCase()} verification code dispatched directly to ${cleanEmail} from wonderlightadventure@gmail.com`
+      `Server offline — 4-digit ${purpose.toLowerCase()} code generated locally for ${cleanEmail}. Real email not sent.`
     );
 
     return {
       success: true,
       resolvedEmail: cleanEmail,
-      message: `4-digit verification code sent directly to ${cleanEmail} from wonderlightadventure@gmail.com.`,
+      message: `⚠️ Email server is offline. Your verification code is: ${generatedOtp}. You can also use test code 1234. To receive real emails, start the server with: npm run dev`,
     };
   };
 
