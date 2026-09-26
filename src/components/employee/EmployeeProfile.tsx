@@ -17,6 +17,7 @@ import { useApp } from '../../context/AppContext';
 
 export const EmployeeProfile: React.FC = () => {
   const { currentUser, currentEmployee, updateProfile } = useApp();
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -29,6 +30,23 @@ export const EmployeeProfile: React.FC = () => {
     e.preventDefault();
     updateProfile(formData);
     setIsEditing(false);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      if (base64) {
+        updateProfile({ profileImage: base64 });
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -74,9 +92,17 @@ export const EmployeeProfile: React.FC = () => {
                 referrerPolicy="no-referrer"
               />
             </div>
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageUpload}
+            />
             <button
-              onClick={() => alert('Photo updated with official company badge.')}
-              className="absolute bottom-0 right-0 p-2 rounded-full bg-[#168BFF] text-white hover:bg-[#1270cc] shadow-md transition-colors"
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute bottom-0 right-0 p-2 rounded-full bg-[#168BFF] text-white hover:bg-[#1270cc] shadow-md transition-colors cursor-pointer"
               title="Change Photo"
             >
               <Camera size={14} />
