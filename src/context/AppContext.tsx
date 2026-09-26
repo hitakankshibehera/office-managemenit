@@ -768,21 +768,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Resilient API Fetch Helper with fallback to Express port 3000
+  // Resilient API Fetch Helper with fallback to Express port 3000 & 127.0.0.1
   const safeApiFetch = async (
     endpoint: string,
     options: RequestInit
   ): Promise<{ ok: boolean; status: number; data: any }> => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
     const urls = [
       endpoint,
       `http://localhost:3000${endpoint}`,
+      `http://127.0.0.1:3000${endpoint}`,
     ];
 
     let lastError: any = null;
 
     for (const url of urls) {
       try {
-        const res = await fetch(url, options);
+        const fetchOptions: RequestInit = {
+          ...options,
+          mode: 'cors',
+        };
+        const res = await fetch(url, fetchOptions);
         const contentType = res.headers.get('content-type') || '';
         let data: any = {};
         if (contentType.includes('application/json')) {
