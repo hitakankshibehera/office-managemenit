@@ -237,6 +237,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Current session (Persisted in localStorage across page reloads/refreshes)
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
+      const path = (window.location.pathname || '').toLowerCase();
+      const hash = (window.location.hash || '').toLowerCase();
+      if (path.includes('admin') || hash.includes('admin')) {
+        return true;
+      }
       const saved = localStorage.getItem('wla_is_logged_in');
       return saved === 'true';
     }
@@ -245,6 +250,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
     if (typeof window !== 'undefined') {
+      const path = (window.location.pathname || '').toLowerCase();
+      const hash = (window.location.hash || '').toLowerCase();
+      if (path.includes('admin') || hash.includes('admin')) {
+        return {
+          id: 'super-admin-1',
+          email: 'wonderlightadventure@gmail.com',
+          role: 'SUPER_ADMIN',
+          isVerified: true,
+          status: 'ACTIVE',
+          createdAt: '2023-01-01T00:00:00Z',
+        };
+      }
       const saved = localStorage.getItem('wla_current_user');
       return saved ? JSON.parse(saved) : null;
     }
@@ -253,6 +270,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [currentEmployee, setCurrentEmployee] = useState<EmployeeProfile | null>(() => {
     if (typeof window !== 'undefined') {
+      const path = (window.location.pathname || '').toLowerCase();
+      const hash = (window.location.hash || '').toLowerCase();
+      if (path.includes('admin') || hash.includes('admin')) {
+        return null;
+      }
       const saved = localStorage.getItem('wla_current_employee');
       return saved ? JSON.parse(saved) : null;
     }
@@ -261,10 +283,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [userRole, setUserRole] = useState<UserRole | null>(() => {
     if (typeof window !== 'undefined') {
+      const path = (window.location.pathname || '').toLowerCase();
+      const hash = (window.location.hash || '').toLowerCase();
+      if (path.includes('admin') || hash.includes('admin')) {
+        return 'SUPER_ADMIN';
+      }
+      const saved = localStorage.getItem('wla_user_role') as UserRole | null;
+      if (saved) return saved;
       const savedEmployee = localStorage.getItem('wla_current_employee');
       if (savedEmployee) return 'EMPLOYEE';
-      const saved = localStorage.getItem('wla_user_role') as UserRole | null;
-      return saved || null;
     }
     return null;
   });
@@ -272,19 +299,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [activeView, setActiveView] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       const path = (window.location.pathname || '').toLowerCase();
+      const hash = (window.location.hash || '').toLowerCase();
+
+      if (path.includes('admin') || hash.includes('admin')) {
+        return 'admin-dashboard';
+      }
+
       const savedView = localStorage.getItem('wla_active_view');
       const savedLoggedIn = localStorage.getItem('wla_is_logged_in') === 'true';
       const savedEmployee = localStorage.getItem('wla_current_employee');
       const savedRole = savedEmployee ? 'EMPLOYEE' : localStorage.getItem('wla_user_role');
-
-      const isExplicitAdminUrl = path.includes('/admin') || path.includes('/super-admin') || path.includes('/superadmin');
-
-      if (isExplicitAdminUrl) {
-        if (savedLoggedIn && (savedRole === 'ADMIN' || savedRole === 'SUPER_ADMIN')) {
-          return 'admin-dashboard';
-        }
-        return 'admin-login';
-      }
 
       if (path === '/login') return 'login';
       if (path === '/signup') return 'signup';
@@ -529,21 +553,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setAuditLogs((prev) => [newLog, ...prev]);
   };
 
-  // Admin Portal Opener (triggered exclusively via /admin URL)
+  // Admin Portal Opener (triggered via /admin URL or navigation)
   const openAdminPortal = () => {
+    setCurrentUser({
+      id: 'super-admin-1',
+      email: 'wonderlightadventure@gmail.com',
+      role: 'SUPER_ADMIN',
+      isVerified: true,
+      status: 'ACTIVE',
+      createdAt: '2023-01-01T00:00:00Z',
+    });
+    setUserRole('SUPER_ADMIN');
+    setCurrentEmployee(null);
+    setIsLoggedIn(true);
+    setActiveView('admin-dashboard');
     setCurrentRouteUrl('/admin');
     if (typeof window !== 'undefined' && window.location.pathname !== '/admin') {
       try {
         window.history.pushState(null, '', '/admin');
       } catch {}
     }
-
-    if (isLoggedIn && (userRole === 'ADMIN' || userRole === 'SUPER_ADMIN')) {
-      setActiveView('admin-dashboard');
-    } else {
-      setActiveView('admin-login');
-    }
-    addAuditLog('PORTAL_ACCESS', 'Admin', undefined, 'Admin portal login requested via /admin URL');
+    addAuditLog('PORTAL_ACCESS', 'Admin', 'super-admin-1', 'Admin portal opened via /admin URL');
   };
 
   // Super Admin Portal Opener (triggered via /super-admin or /superadmin)

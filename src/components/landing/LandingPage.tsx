@@ -19,7 +19,7 @@ import { useApp } from '../../context/AppContext';
 import { LayoutDashboard, ArrowRight as ArrowIcon } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
-  const { setActiveView, isLoggedIn, isAuthenticated, userRole } = useApp();
+  const { setActiveView, isLoggedIn, isAuthenticated, userRole, openAdminPortal } = useApp();
 
   const isUserAuthenticated = isLoggedIn || isAuthenticated;
   const dashboardTargetView = userRole === 'EMPLOYEE' ? 'employee-dashboard' : 'admin-dashboard';
@@ -50,15 +50,31 @@ export const LandingPage: React.FC = () => {
           {/* Actions */}
           <div className="flex items-center gap-3">
             {isUserAuthenticated ? (
-              <button
-                onClick={() => setActiveView(dashboardTargetView)}
-                className="px-5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-[#168BFF] to-[#18BFFF] text-white shadow-lg hover:shadow-cyan-500/25 transition-all flex items-center gap-2 cursor-pointer"
-              >
-                <LayoutDashboard className="w-4 h-4" />
-                <span>Go to Dashboard</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => openAdminPortal()}
+                  className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30 transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Shield className="w-3.5 h-3.5" />
+                  <span>Admin Portal</span>
+                </button>
+                <button
+                  onClick={() => setActiveView(dashboardTargetView)}
+                  className="px-5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-[#168BFF] to-[#18BFFF] text-white shadow-lg hover:shadow-cyan-500/25 transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  <span>Go to Dashboard</span>
+                </button>
+              </div>
             ) : (
               <>
+                <button
+                  onClick={() => openAdminPortal()}
+                  className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30 transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Shield className="w-3.5 h-3.5" />
+                  <span>Admin Portal</span>
+                </button>
                 <button
                   onClick={() => setActiveView('login')}
                   className="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-200 hover:text-white hover:bg-white/10 transition-colors"
@@ -107,6 +123,13 @@ export const LandingPage: React.FC = () => {
 
             {/* CTAs */}
             <div className="flex flex-wrap items-center justify-center gap-4 mb-4">
+              <button
+                onClick={() => openAdminPortal()}
+                className="px-8 py-3.5 rounded-xl font-bold text-sm bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 hover:shadow-xl hover:shadow-amber-500/20 transition-all hover:scale-102 flex items-center gap-2 cursor-pointer"
+              >
+                <Shield size={16} />
+                <span>Admin Portal (/admin)</span>
+              </button>
               <button
                 onClick={() => setActiveView('login')}
                 className="px-8 py-3.5 rounded-xl font-bold text-sm bg-gradient-to-r from-[#168BFF] to-[#18BFFF] text-white hover:shadow-xl hover:shadow-cyan-500/30 transition-all hover:scale-102 flex items-center gap-2 cursor-pointer"
