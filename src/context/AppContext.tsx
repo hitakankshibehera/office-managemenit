@@ -768,6 +768,50 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  // Resilient API Fetch Helper with fallback to Express port 3000
+  const safeApiFetch = async (
+    endpoint: string,
+    options: RequestInit
+  ): Promise<{ ok: boolean; status: number; data: any }> => {
+    const urls = [
+      endpoint,
+      `http://localhost:3000${endpoint}`,
+    ];
+
+    let lastError: any = null;
+
+    for (const url of urls) {
+      try {
+        const res = await fetch(url, options);
+        const contentType = res.headers.get('content-type') || '';
+        let data: any = {};
+        if (contentType.includes('application/json')) {
+          data = await res.json();
+        } else {
+          const text = await res.text();
+          try {
+            data = JSON.parse(text);
+          } catch {
+            data = { error: `Server returned HTTP ${res.status}` };
+          }
+        }
+        if (res.ok) {
+          return { ok: true, status: res.status, data };
+        } else if (url === urls[urls.length - 1]) {
+          return { ok: false, status: res.status, data };
+        }
+      } catch (err) {
+        lastError = err;
+      }
+    }
+
+    return {
+      ok: false,
+      status: 0,
+      data: { error: lastError?.message || 'Could not connect to verification server. Please make sure the server is running.' },
+    };
+  };
+
   // Request OTP for Login
   const loginWithEmail = async (inputEmailOrId: string) => {
     let cleanEmail = inputEmailOrId.trim().toLowerCase();
@@ -806,15 +850,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         status: e.status,
       }));
 
-      const res = await fetch('/api/auth/request-otp', {
+      const { ok, data } = await safeApiFetch('/api/auth/request-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: cleanEmail, purpose: 'LOGIN', clientEmployees }),
       });
-      const data = await res.json();
-      if (!res.ok) {
+
+      if (!ok) {
         return { success: false, message: data.error || 'Failed to send login verification code.' };
       }
+
       const targetEmail = data.resolvedEmail || cleanEmail;
       setOtpTargetEmail(targetEmail);
       setLatestGeneratedOtp(null);
@@ -829,7 +874,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.warn('[Auth API] Error requesting OTP:', err);
       return {
         success: false,
-        message: 'Could not connect to verification server. Please check your internet connection and try again.',
+        message: 'Could not connect to verification server. Please check your network connection.',
       };
     }
   };
@@ -848,15 +893,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         status: e.status,
       }));
 
-      const res = await fetch('/api/auth/request-otp', {
+      const { ok, data } = await safeApiFetch('/api/auth/request-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: cleanEmail, purpose: mode, signupData: pendingRegistrationData, clientEmployees }),
       });
-      const data = await res.json();
-      if (!res.ok) {
+
+      if (!ok) {
         return { success: false, message: data.error || 'Failed to send verification code to your email.' };
       }
+
       const targetEmail = data.resolvedEmail || cleanEmail;
       setOtpTargetEmail(targetEmail);
       setLatestGeneratedOtp(null);
@@ -887,13 +933,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         status: e.status,
       }));
 
-      const res = await fetch('/api/auth/verify-otp', {
+      const { ok, data } = await safeApiFetch('/api/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: cleanEmail, otp, purpose: 'LOGIN', clientEmployees }),
       });
-      const data = await res.json();
-      if (!res.ok) {
+
+      if (!ok) {
         return { success: false, message: data.error || 'Invalid verification code. Please check and try again.' };
       }
 
@@ -970,13 +1016,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     try {
-      const res = await fetch('/api/auth/request-otp', {
+      const { ok, data: resData } = await safeApiFetch('/api/auth/request-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: cleanEmail, purpose: 'SIGNUP', signupData: data }),
       });
-      const resData = await res.json();
-      if (!res.ok) {
+
+      if (!ok) {
         return { success: false, message: resData.error || 'Failed to send verification code.' };
       }
       setPendingRegistrationData(data);
@@ -1016,13 +1062,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         status: e.status,
       }));
 
-      const res = await fetch('/api/auth/verify-otp', {
+      const { ok, data: resData } = await safeApiFetch('/api/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: cleanEmail, otp, purpose: 'SIGNUP', clientEmployees }),
       });
-      const resData = await res.json();
-      if (!res.ok) {
+
+      if (!ok) {
         return { success: false, message: resData.error || 'Invalid verification code.' };
       }
 
